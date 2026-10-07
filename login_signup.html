@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fresh 'N Klean - Authentication</title>
+  <link rel="stylesheet" href="css/login_signup.css">
+  <script src="js/login_signup.js" defer></script>
+</head>
+
+<body>
+  <main class="split-container">
+    
+    <section class="brand-section">
+      <div class="design" aria-hidden="true">
+        <svg viewBox="0 0 600 170" preserveAspectRatio="none" style="position:absolute;left:0;bottom:70px;width:100%;height:170px">
+          <path d="M-10 130Q190 30 400 92T620 72" fill="none" stroke="#9A9CA8" stroke-width="12" stroke-linecap="round" opacity=".35"/>
+          <path d="M-10 150Q230 104 620 124" fill="none" stroke="#C58BD3" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+        </svg>
+        <svg viewBox="0 0 20 20" style="position:absolute;left:44%;top:13%;width:20px">
+          <path d="M10 0l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="#fff" opacity=".85"/>
+        </svg>
+        <svg viewBox="0 0 20 20" style="position:absolute;right:20%;top:56%;width:13px">
+          <path d="M10 0l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="#fff" opacity=".7"/>
+        </svg>
+
+        <i class="bub g" style="right:9%;top:7%;width:72px;height:72px"></i>
+        <i class="bub"   style="right:30%;top:28%;width:34px;height:34px;animation-delay:-2s"></i>
+        <i class="bub p" style="right:3%;top:42%;width:110px;height:110px;animation-delay:-4s"></i>
+        <i class="bub"   style="left:48%;bottom:36%;width:46px;height:46px;animation-delay:-1s"></i>
+        <i class="bub p" style="left:7%;top:20%;width:26px;height:26px;animation-delay:-3s"></i>
+        <i class="bub g" style="right:40%;bottom:10%;width:28px;height:28px;animation-delay:-5s"></i>
+      </div>
+
+      <div class="header">
+        <div class="logo">
+          <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.25 0.75H3.75C2.92157 0.75 2.25 1.42157 2.25 2.25V21.75C2.25 22.5784 2.92157 23.25 3.75 23.25H20.25C21.0784 23.25 21.75 22.5784 21.75 21.75V2.25C21.75 1.42157 21.0784 0.75 20.25 0.75Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.25 3.75H8.25" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19 3.20001V4.20001" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 3.20001V4.20001" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.25 6.75H21.75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 20.25C14.8995 20.25 17.25 17.8995 17.25 15C17.25 12.1005 14.8995 9.75 12 9.75C9.10051 9.75 6.75 12.1005 6.75 15C6.75 17.8995 9.10051 20.25 12 20.25Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9.75 15C9.75 14.4033 9.98705 13.831 10.409 13.409C10.818 13 11.3683 12.7647 11.9451 12.7507" stroke="#71717A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="brand-info">
+          <span class="business-name">Fresh 'N Klean</span>
+          <span class="sub-name">LAUNDRY HUB</span>
+        </div>
+      </div>
+
+      <div class="center">
+        <h1 class="banner">Your Laundry is clean, <br> ready to go home.</h1>
+        <p class="subtext">Book a pickup, follow every load, and collect when it's ready.</p>
+      </div>
+    </section>
+    
+    <div class="auth-section">
+      
+      <section class="form-section active-section" id="login-view">
+        <div class="auth-card">
+          <h2 class="login">Log In</h2>
+          <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
+
+          <form action="login-form">
+            <div class="form-group">
+              <label for="login-email">EMAIL</label>
+              <input type="email" id="login-email" name="email" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">PASSWORD</label>
+              <input type="password" id="login-password" name="password" required autocomplete="current-password">
+            </div>
+
+            <div class="form-options">
+              <label class="custom-checkbox">
+                <input type="checkbox" name="remember" id="login-remember">
+                <span class="checkmark"></span>
+                <span class="label-text">REMEMBER ME</span>
+              </label>
+              <a href="#reset-view" class="switch-view" data-target="reset-view">FORGOT?</a>
+            </div>
+
+            <button type="submit" class="submit-btn" value="login">LOG IN</button>
+          </form>
+
+          <footer class="footer-card">
+            <p class="new-acc">Don't have an account? <span><a href="#signup-view" class="switch-view" data-target="signup-view">Create an account</a></span></p>
+          </footer>
+        </div>
+      </section>
+
+      <section class="form-section" id="signup-view" style="display: none;">
+        <div class="auth-card">
+          <h2 class="signup">SIGN UP</h2>
+          <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
+
+          <form action="signup-form" method="POST">
+            <div class="form-group">
+              <label for="signup-fullname">Full Name</label>
+              <input type="text" id="signup-fullname" name="fullname" required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+              <label for="signup-email">EMAIL</label>
+              <input type="email" id="signup-email" name="email" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="signup-password">PASSWORD</label>
+              <input type="password" id="signup-password" name="password" required autocomplete="new-password">
+            </div>
+            
+            <label class="custom-checkbox">
+              <input type="checkbox" name="remember" id="signup-remember">
+              <span class="checkmark"></span>
+              <span class="label-text">REMEMBER ME</span>
+            </label>
+
+            <button type="submit" class="submit-btn" value="signup">Create account</button>
+          </form>
+
+          <footer class="footer-card">
+            <p class="backLogin">Already have an account? <span><a href="#login-view" class="switch-view" data-target="login-view">Back to log in</a></span></p>
+          </footer>
+        </div>
+      </section>
+
+      <section class="form-section" id="reset-view" style="display: none;">
+        <div class="auth-card">
+          <h2 class="reset">Forgot password</h2>
+          <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
+
+          <form action="reset-form" method="POST" id="reset-form-container">
+  
+            <div class="reset-step" id="step-email">
+              <div class="form-group">
+                <label for="reset-email">EMAIL</label>
+                <input type="email" id="reset-email" name="email" required autocomplete="email">
+              </div>
+              <button type="button" id="sendCodeBtn" class="submit-btn">Send Reset Code</button>
+            </div>
+
+            <div class="reset-step" id="step-otp" style="display: none;">
+              <p class="sub-text" style="margin-bottom: 16px;">Enter the 6-digit code sent to your email.</p>
+              <div class="otp-inputs">
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
+              </div>
+              <button type="button" id="verifyBtn" class="submit-btn">Verify Code</button>
+            </div>
+
+            <div class="reset-step" id="step-new-password" style="display: none;">
+              <div class="form-group">
+                <label for="reset-password">NEW PASSWORD</label>
+                <input type="password" id="reset-password" name="password" autocomplete="new-password">
+              </div>
+              
+              <div class="form-group">
+                <label for="confirm-password">CONFIRM PASSWORD</label>
+                <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password">
+              </div>
+
+              <button type="submit" class="submit-btn">Update Password</button>
+            </div>
+
+          </form>
+
+          <footer class="footer-card">
+            <p class="new-acc">Don't have an account? <span><a href="#signup-view" class="switch-view" data-target="signup-view">Create an account</a></span></p>
+          </footer>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
