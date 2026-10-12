@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fresh 'N Klean | Customer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/Customer.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <p class="brand-name">Fresh 'N Klean</p>
+        <span class="brand-tag">LAUNDRY HUB</span>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Customer navigation">
+      <button class="nav-item" data-view="schedule" type="button"><span aria-hidden="true">📅</span>Schedule</button>
+      <button class="nav-item" data-view="history" type="button"><span aria-hidden="true">🧾</span>History</button>
+    </nav>
+
+    <div class="design" aria-hidden="true">
+      <i class="bub g b1"></i>
+      <i class="bub b2"></i>
+      <i class="bub p b3"></i>
+      <i class="bub b4"></i>
+      <i class="bub g b5"></i>
+    </div>
+
+    <div class="user-card">
+      <span class="avatar">MS</span>
+      <div class="user-info">
+        <p class="user-name">Maria Santos</p>
+        <p class="user-role">Customer</p>
+      </div>
+      <button class="logout" id="logoutBtn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    
+    <section class="view" id="view-schedule" aria-labelledby="scheduleTitle" hidden>
+      <h1 id="scheduleTitle">Schedule &amp; basket</h1>
+      <p class="subtitle">Pick a day, a time slot and your basket.</p>
+
+      <div class="panel">
+        <div class="toggle" role="group" aria-label="Service type">
+          <button class="pill active" data-mode="Drop-off" type="button" aria-pressed="true">Drop-off</button>
+          <button class="pill" data-mode="Pickup" type="button" aria-pressed="false">Pickup</button>
+        </div>
+
+        <div class="days" id="days" role="group" aria-label="Day"></div>
+
+        <p class="label">TIME SLOT</p>
+        <div class="slots" id="slots" role="group" aria-label="Time slot"></div>
+
+        <p class="hint" id="basketHint">Choose a time slot to see which baskets are free.</p>
+
+        <div class="baskets" id="baskets" role="group" aria-label="Basket" hidden></div>
+
+        <button class="confirm" id="confirmBtn" type="button" disabled>Confirm schedule</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-history" aria-labelledby="historyTitle" hidden>
+      <h1 id="historyTitle">Order history</h1>
+      <p class="subtitle">Search past orders or reorder in one tap.</p>
+
+      <div class="panel">
+        <div class="toolbar">
+          <input class="search" id="search" type="search" placeholder="Search by order number or date" aria-label="Search orders">
+          <div class="filters" role="group" aria-label="Filter orders">
+            <button class="pill active" data-filter="all" type="button" aria-pressed="true">All</button>
+            <button class="pill" data-filter="completed" type="button" aria-pressed="false">Completed</button>
+            <button class="pill" data-filter="cancelled" type="button" aria-pressed="false">Cancelled</button>
+          </div>
+        </div>
+        <ul class="orders" id="orders"></ul>
+        <p class="empty" id="empty" hidden>No orders match your search.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="logoutDialog">
+  <h2>Log out?</h2>
+  <p>You will need to log in again to schedule or view your orders.</p>
+  <div class="dialog-actions">
+    <button class="btn-ghost" id="logoutCancel" type="button">Stay logged in</button>
+    <button class="btn-solid" id="logoutConfirm" type="button">Log out</button>
+  </div>
+</dialog>
+
+<dialog id="doneDialog">
+  <h2 id="doneTitle">Schedule confirmed</h2>
+  <p id="doneText"></p>
+  <div class="dialog-actions">
+    <button class="btn-ghost" id="doneStay" type="button">Schedule another</button>
+    <button class="btn-solid" id="doneHistory" type="button">View history</button>
+  </div>
+</dialog>
+
+<div class="signed-out" id="signedOut" hidden>
+  <div>
+    <h2>You have been logged out</h2>
+    <p>Thanks for using Fresh 'N Klean.</p>
+    <button class="btn-solid" id="loginAgain" type="button">Log in again</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/Customer.js"></script>
+</body>
+</html>
