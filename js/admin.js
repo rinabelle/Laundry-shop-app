@@ -232,7 +232,7 @@ function pickupCell(o){
 function renderHistory(){
   const f=histFiltered(),shown=f.slice(0,hLimit);
   $('#histT').innerHTML=shown.length
-    ?`<thead><tr><th>Name</th><th>Service</th><th class="num">Price</th><th>Date</th><th>Picked up?</th></tr></thead><tbody>`+
+    ?`<thead><tr><th>Name</th><th>Service</th><th class="num">Price</th><th>Date</th><th>Picked up</th></tr></thead><tbody>`+
       shown.map(o=>`<tr>
         <td data-l="Name"><b>${esc(o.name)}</b></td>
         <td data-l="Service">${esc(o.svc)}</td>
