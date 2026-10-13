@@ -1,5 +1,6 @@
 (function () {
   var LOGIN_URL = "login_signup.html";
+  var CUSTOMER_KEY = "freshNKleanCustomer";
   var TOTAL_BASKETS = 14;
   var SLOTS = [
     { label: "9–11 AM", end: 11 },
@@ -18,13 +19,34 @@
     { id: "LDR-0003", date: "Aug 30, 2026", service: "Wash, Dry & Press", weight: "2.5 kg", price: "₱258", note: "Paid", status: "completed" }
   ];
   var nextOrderNumber = 13;
+  var defaultCustomer = {
+    name: "Maria Santos",
+    phone: "0917 555 0142",
+    email: "maria.santos@example.com",
+    address: "24 Sampaguita St, Brgy. San Isidro, Quezon City",
+    instructions: ""
+  };
+
+  function loadCustomer() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(CUSTOMER_KEY));
+      if (saved && typeof saved === "object") {
+        Object.keys(defaultCustomer).forEach(function (key) {
+          if (typeof saved[key] === "string") defaultCustomer[key] = saved[key];
+        });
+      }
+    } catch (e) {}
+    return defaultCustomer;
+  }
+
+  var customer = loadCustomer();
 
   var state = { mode: "Drop-off", dayIndex: 0, slotIndex: null, basket: null, filter: "all", query: "" };
   var days = [];
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    views: { schedule: $("view-schedule"), history: $("view-history"), prices: $("view-prices") },
+    views: { schedule: $("view-schedule"), history: $("view-history"), prices: $("view-prices"), settings: $("view-settings") },
     navItems: document.querySelectorAll(".nav-item"),
     days: $("days"),
     slots: $("slots"),
@@ -35,6 +57,11 @@
     empty: $("empty"),
     search: $("search"),
     toast: $("toast"),
+    pickupDetails: $("pickupDetails"),
+    pickupAddressSummary: $("pickupAddressSummary"),
+    pickupPhoneSummary: $("pickupPhoneSummary"),
+    settingsForm: $("customerSettingsForm"),
+    settingsStatus: $("settingsStatus"),
     logoutDialog: $("logoutDialog"),
     doneDialog: $("doneDialog"),
     signedOut: $("signedOut")
@@ -59,6 +86,24 @@
     });
     if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
     window.scrollTo(0, 0);
+  }
+
+  function renderCustomer() {
+    $("customerName").value = customer.name;
+    $("customerPhone").value = customer.phone;
+    $("customerEmail").value = customer.email;
+    $("customerAddress").value = customer.address;
+    $("customerInstructions").value = customer.instructions;
+    document.querySelector(".user-name").textContent = customer.name;
+    document.querySelector(".avatar").textContent = customer.name.split(/\s+/).map(function (part) { return part.charAt(0); }).join("").slice(0, 2).toUpperCase();
+    renderPickupDetails();
+  }
+
+  function renderPickupDetails() {
+    var hasPickupInfo = customer.address.trim() && customer.phone.trim();
+    els.pickupDetails.hidden = state.mode !== "Pickup";
+    els.pickupAddressSummary.textContent = hasPickupInfo ? customer.address : "Add a pickup address and phone number in Settings.";
+    els.pickupPhoneSummary.textContent = hasPickupInfo ? customer.phone : "";
   }
 
   function buildDays() {
@@ -200,12 +245,19 @@
 
   function confirmSchedule() {
     if (state.slotIndex === null || state.basket === null) return;
+    if (state.mode === "Pickup" && (!customer.phone.trim() || !customer.address.trim())) {
+      showView("settings");
+      showToast("Add your phone number and pickup address before confirming.");
+      return;
+    }
     var id = "LDR-" + String(nextOrderNumber++).padStart(4, "0");
     var date = days[state.dayIndex];
     var slot = SLOTS[state.slotIndex].label;
-    orders.unshift({ id: id, date: formatDate(new Date()), service: state.mode, weight: "—", price: "₱0", note: "Pending", status: "scheduled" });
+    orders.unshift({ id: id, date: formatDate(new Date()), service: state.mode, weight: "—", price: "₱0", note: "Pending", status: "scheduled", customer: { name: customer.name, phone: customer.phone, address: customer.address, instructions: customer.instructions } });
     $("doneTitle").textContent = "Schedule confirmed";
-    $("doneText").textContent = id + " · " + state.mode + " on " + DAY_NAMES[date.getDay()] + ", " + formatDate(date) + ", " + slot + ". Your basket is B" + state.basket + ".";
+    var confirmation = id + " · " + state.mode + " on " + DAY_NAMES[date.getDay()] + ", " + formatDate(date) + ", " + slot + ". Your basket is B" + state.basket + ". Contact: " + customer.phone + ".";
+    if (state.mode === "Pickup") confirmation += " Pickup address: " + customer.address + (customer.instructions ? ". Instructions: " + customer.instructions : "");
+    $("doneText").textContent = confirmation;
     els.doneDialog.showModal();
     state.slotIndex = null;
     state.basket = null;
@@ -235,8 +287,29 @@
         b.classList.toggle("active", on);
         b.setAttribute("aria-pressed", on);
       });
+      renderPickupDetails();
     });
   });
+
+  els.settingsForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    customer = {
+      name: $("customerName").value.trim(),
+      phone: $("customerPhone").value.trim(),
+      email: $("customerEmail").value.trim(),
+      address: $("customerAddress").value.trim(),
+      instructions: $("customerInstructions").value.trim()
+    };
+    try {
+      localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
+      els.settingsStatus.textContent = "Changes saved.";
+    } catch (e) {
+      els.settingsStatus.textContent = "Could not save on this device. Your changes will apply until you leave this page.";
+    }
+    renderCustomer();
+  });
+
+  $("editCustomerDetails").addEventListener("click", function () { showView("settings"); });
 
   document.querySelectorAll("[data-filter]").forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -271,6 +344,7 @@
   window.addEventListener("hashchange", function () { showView(location.hash.slice(1)); });
 
   buildDays();
+  renderCustomer();
   renderAll();
   renderOrders();
   showView(location.hash.slice(1) || "schedule");

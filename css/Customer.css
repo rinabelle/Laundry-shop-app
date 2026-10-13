@@ -353,6 +353,118 @@ h1 {
   box-shadow: 0 24px 60px rgba(142, 68, 158, 0.1);
 }
 
+.pickup-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbf8fc;
+}
+
+.pickup-details .label {
+  margin-bottom: 5px;
+}
+
+.pickup-address {
+  font-weight: 700;
+}
+
+.pickup-phone {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.inline-action {
+  flex: none;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--plum-700);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.inline-action:hover {
+  border-color: var(--plum-600);
+  background: var(--plum-tint);
+}
+
+.settings-form {
+  max-width: 780px;
+}
+
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  color: var(--plum-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--plum-text);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--plum-600);
+  box-shadow: 0 0 0 3px rgba(142, 68, 158, 0.15);
+}
+
+.field-optional {
+  margin-left: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-status {
+  color: var(--teal-dark);
+  font-size: 13px;
+}
+
 .service-prices {
   display: grid;
   gap: 12px;
@@ -909,8 +1021,12 @@ dialog p {
   }
 
   .nav-item {
+    flex: 1 1 0;
+    min-width: 0;
     justify-content: center;
-    padding: 11px 12px;
+    gap: 6px;
+    padding: 11px 4px;
+    font-size: 13px;
   }
 
   .user-card {
@@ -961,6 +1077,10 @@ dialog p {
     align-items: start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .settings-fields {
+    gap: 16px;
   }
 }
 
@@ -1031,6 +1151,28 @@ dialog p {
 
   .extras-list li {
     font-size: 14px;
+  }
+
+  .settings-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .field-wide {
+    grid-column: auto;
+  }
+
+  .settings-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-actions .confirm {
+    width: 100%;
+  }
+
+  .pickup-details {
+    align-items: start;
+    flex-direction: column;
   }
 
   .filters .pill {

@@ -24,6 +24,7 @@
       <button class="nav-item" data-view="schedule" type="button"><span aria-hidden="true">📅</span>Schedule</button>
       <button class="nav-item" data-view="history" type="button"><span aria-hidden="true">🧾</span>History</button>
       <button class="nav-item" data-view="prices" type="button"><span aria-hidden="true">₱</span>Price &amp; Services</button>
+      <button class="nav-item" data-view="settings" type="button"><span aria-hidden="true">⚙</span>Settings</button>
     </nav>
 
     <div class="design" aria-hidden="true">
@@ -56,6 +57,15 @@
         <div class="toggle" role="group" aria-label="Service type">
           <button class="pill active" data-mode="Drop-off" type="button" aria-pressed="true">Drop-off</button>
           <button class="pill" data-mode="Pickup" type="button" aria-pressed="false">Pickup</button>
+        </div>
+
+        <div class="pickup-details" id="pickupDetails" aria-live="polite" hidden>
+          <div>
+            <p class="label">PICKUP DETAILS</p>
+            <p class="pickup-address" id="pickupAddressSummary"></p>
+            <p class="pickup-phone" id="pickupPhoneSummary"></p>
+          </div>
+          <button class="inline-action" id="editCustomerDetails" type="button">Edit details</button>
         </div>
 
         <div class="days" id="days" role="group" aria-label="Day"></div>
@@ -136,6 +146,40 @@
       </section>
 
       <p class="price-note">Prices are sample starting rates in Philippine pesos. A 3 kg minimum applies to per-kilogram services; final pricing may vary by fabric and item condition.</p>
+    </section>
+
+    <section class="view" id="view-settings" aria-labelledby="settingsTitle" hidden>
+      <h1 id="settingsTitle">Customer settings</h1>
+      <p class="subtitle">Keep your contact and pickup details up to date for your next order.</p>
+
+      <form class="panel settings-form" id="customerSettingsForm">
+        <div class="settings-fields">
+          <label class="field" for="customerName">
+            <span>Full name</span>
+            <input id="customerName" name="name" type="text" autocomplete="name" required>
+          </label>
+          <label class="field" for="customerPhone">
+            <span>Mobile number</span>
+            <input id="customerPhone" name="phone" type="tel" autocomplete="tel" required>
+          </label>
+          <label class="field" for="customerEmail">
+            <span>Email address</span>
+            <input id="customerEmail" name="email" type="email" autocomplete="email">
+          </label>
+          <label class="field field-wide" for="customerAddress">
+            <span>Pickup address</span>
+            <textarea id="customerAddress" name="address" rows="3" autocomplete="street-address" required></textarea>
+          </label>
+          <label class="field field-wide" for="customerInstructions">
+            <span>Pickup instructions <span class="field-optional">Optional</span></span>
+            <textarea id="customerInstructions" name="instructions" rows="2" placeholder="Landmark, gate code, or preferred handoff"></textarea>
+          </label>
+        </div>
+        <div class="settings-actions">
+          <p class="settings-status" id="settingsStatus" role="status" aria-live="polite"></p>
+          <button class="confirm" type="submit">Save changes</button>
+        </div>
+      </form>
     </section>
   </main>
 </div>
