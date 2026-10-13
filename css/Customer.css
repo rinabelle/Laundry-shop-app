@@ -353,6 +353,99 @@ h1 {
   box-shadow: 0 24px 60px rgba(142, 68, 158, 0.1);
 }
 
+.service-prices {
+  display: grid;
+  gap: 12px;
+}
+
+.service-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.service-type {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--teal-dark);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.service-copy h2,
+.extras-heading h2 {
+  font-family: var(--font-head);
+  font-size: 20px;
+  color: var(--plum-text);
+}
+
+.service-copy p,
+.extras-heading > p {
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.service-rate {
+  flex: none;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.service-rate strong {
+  font-family: var(--font-head);
+  font-size: 28px;
+  color: var(--plum-text);
+}
+
+.extras {
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.extras-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+
+.extras-heading .service-type {
+  margin-bottom: 5px;
+}
+
+.extras-list {
+  list-style: none;
+}
+
+.extras-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+
+.extras-list strong {
+  color: var(--plum-text);
+  white-space: nowrap;
+}
+
+.price-note {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .pill {
   padding: 11px 24px;
   border: 1px solid var(--line);
@@ -859,6 +952,16 @@ dialog p {
   .filters {
     flex-wrap: wrap;
   }
+
+  .service-price {
+    padding: 18px;
+  }
+
+  .extras-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -914,6 +1017,20 @@ dialog p {
 
   .confirm {
     width: 100%;
+  }
+
+  .service-price {
+    align-items: start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .service-rate strong {
+    font-size: 25px;
+  }
+
+  .extras-list li {
+    font-size: 14px;
   }
 
   .filters .pill {

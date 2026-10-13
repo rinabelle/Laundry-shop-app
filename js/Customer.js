@@ -24,7 +24,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    views: { schedule: $("view-schedule"), history: $("view-history") },
+    views: { schedule: $("view-schedule"), history: $("view-history"), prices: $("view-prices") },
     navItems: document.querySelectorAll(".nav-item"),
     days: $("days"),
     slots: $("slots"),

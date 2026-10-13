@@ -23,6 +23,7 @@
     <nav class="nav" aria-label="Customer navigation">
       <button class="nav-item" data-view="schedule" type="button"><span aria-hidden="true">📅</span>Schedule</button>
       <button class="nav-item" data-view="history" type="button"><span aria-hidden="true">🧾</span>History</button>
+      <button class="nav-item" data-view="prices" type="button"><span aria-hidden="true">₱</span>Price &amp; Services</button>
     </nav>
 
     <div class="design" aria-hidden="true">
@@ -86,6 +87,55 @@
         <ul class="orders" id="orders"></ul>
         <p class="empty" id="empty" hidden>No orders match your search.</p>
       </div>
+    </section>
+
+    <section class="view" id="view-prices" aria-labelledby="pricesTitle" hidden>
+      <h1 id="pricesTitle">Price &amp; Services</h1>
+      <p class="subtitle">Straightforward laundry care, priced by the kilogram or item.</p>
+
+      <div class="service-prices" aria-label="Laundry service prices">
+        <article class="service-price">
+          <div class="service-copy">
+            <span class="service-type">MOST POPULAR</span>
+            <h2>Wash &amp; Fold</h2>
+            <p>Washed, dried and neatly folded, ready to put away.</p>
+          </div>
+          <p class="service-rate"><strong>₱80</strong><span>/ kg</span></p>
+        </article>
+        <article class="service-price">
+          <div class="service-copy">
+            <span class="service-type">EVERYDAY CARE</span>
+            <h2>Wash, Dry &amp; Fold</h2>
+            <p>A complete clean and dry with a tidy fold for everyday wear.</p>
+          </div>
+          <p class="service-rate"><strong>₱100</strong><span>/ kg</span></p>
+        </article>
+        <article class="service-price">
+          <div class="service-copy">
+            <span class="service-type">PRESSED FINISH</span>
+            <h2>Wash, Dry &amp; Press</h2>
+            <p>Cleaned, dried and pressed for a crisp, ready-to-wear finish.</p>
+          </div>
+          <p class="service-rate"><strong>₱120</strong><span>/ kg</span></p>
+        </article>
+      </div>
+
+      <section class="extras" aria-labelledby="extrasTitle">
+        <div class="extras-heading">
+          <div>
+            <p class="service-type">EXTRA CARE</p>
+            <h2 id="extrasTitle">Bulky items &amp; add-ons</h2>
+          </div>
+          <p>Special pieces are priced individually.</p>
+        </div>
+        <ul class="extras-list">
+          <li><span>Small comforter</span><strong>from ₱250</strong></li>
+          <li><span>Large comforter</span><strong>from ₱350</strong></li>
+          <li><span>Extra ironing</span><strong>from ₱20 / item</strong></li>
+        </ul>
+      </section>
+
+      <p class="price-note">Prices are sample starting rates in Philippine pesos. A 3 kg minimum applies to per-kilogram services; final pricing may vary by fabric and item condition.</p>
     </section>
   </main>
 </div>
