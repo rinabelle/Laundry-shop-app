@@ -20,20 +20,28 @@
   ];
   var nextOrderNumber = 13;
   var defaultCustomer = {
+    name: "Rinabelle Cayton",
+    phone: "0969 454 3360",
+    email: "rinatone@gmail.com",
+    address: "20 Acapulco St., Commonwealth, Quezon City",
+    instructions: "Dun oh"
+  };
+  var legacyCustomer = {
     name: "Maria Santos",
-    phone: "0917 555 0142",
-    email: "maria.santos@example.com",
-    address: "24 Sampaguita St, Brgy. San Isidro, Quezon City",
-    instructions: ""
+    email: "maria.santos@example.com"
   };
 
   function loadCustomer() {
     try {
       var saved = JSON.parse(localStorage.getItem(CUSTOMER_KEY));
       if (saved && typeof saved === "object") {
-        Object.keys(defaultCustomer).forEach(function (key) {
-          if (typeof saved[key] === "string") defaultCustomer[key] = saved[key];
-        });
+        if (saved.name === legacyCustomer.name && saved.email === legacyCustomer.email) {
+          localStorage.setItem(CUSTOMER_KEY, JSON.stringify(defaultCustomer));
+        } else {
+          Object.keys(defaultCustomer).forEach(function (key) {
+            if (typeof saved[key] === "string") defaultCustomer[key] = saved[key];
+          });
+        }
       }
     } catch (e) {}
     return defaultCustomer;
@@ -46,7 +54,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    views: { schedule: $("view-schedule"), history: $("view-history"), prices: $("view-prices"), settings: $("view-settings") },
+    views: { schedule: $("view-schedule"), history: $("view-history"), prices: $("view-prices"), settings: $("view-settings"), contact: $("view-contact") },
     navItems: document.querySelectorAll(".nav-item"),
     days: $("days"),
     slots: $("slots"),
@@ -62,6 +70,13 @@
     pickupPhoneSummary: $("pickupPhoneSummary"),
     settingsForm: $("customerSettingsForm"),
     settingsStatus: $("settingsStatus"),
+    progressOrderLabel: $("progressOrderLabel"),
+    progressCurrentStatus: $("progressCurrentStatus"),
+    progressSteps: document.querySelectorAll("[data-progress-step]"),
+    progressDescription: $("progressDescription"),
+    shopStatus: $("shopStatus"),
+    shopStatusLabel: $("shopStatusLabel"),
+    shopStatusDetail: $("shopStatusDetail"),
     logoutDialog: $("logoutDialog"),
     doneDialog: $("doneDialog"),
     signedOut: $("signedOut")
@@ -104,6 +119,42 @@
     els.pickupDetails.hidden = state.mode !== "Pickup";
     els.pickupAddressSummary.textContent = hasPickupInfo ? customer.address : "Add a pickup address and phone number in Settings.";
     els.pickupPhoneSummary.textContent = hasPickupInfo ? customer.phone : "";
+  }
+
+  function formatShopHour(hour) {
+    return (hour % 12 || 12) + ":00 " + (hour < 12 ? "AM" : "PM");
+  }
+
+  function updateShopStatus() {
+    var parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Manila",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(new Date());
+    var current = {};
+    parts.forEach(function (part) { current[part.type] = part.value; });
+
+    var week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var dayIndex = week.indexOf(current.weekday);
+    var openHour = dayIndex === 0 ? 9 : 8;
+    var closeHour = dayIndex === 0 ? 17 : 20;
+    var currentMinutes = Number(current.hour) * 60 + Number(current.minute);
+    var isOpen = currentMinutes >= openHour * 60 && currentMinutes < closeHour * 60;
+
+    els.shopStatus.classList.toggle("is-open", isOpen);
+    els.shopStatusLabel.textContent = isOpen ? "Open now" : "Closed now";
+    if (isOpen) {
+      els.shopStatusDetail.textContent = "Closes at " + formatShopHour(closeHour);
+      return;
+    }
+
+    var nextOpenDay = currentMinutes < openHour * 60 ? dayIndex : (dayIndex + 1) % week.length;
+    var nextOpenHour = nextOpenDay === 0 ? 9 : 8;
+    var nextOpenText = "Opens " + formatShopHour(nextOpenHour);
+    if (nextOpenDay !== dayIndex) nextOpenText = "Opens " + week[nextOpenDay] + " at " + formatShopHour(nextOpenHour);
+    els.shopStatusDetail.textContent = nextOpenText;
   }
 
   function buildDays() {
@@ -243,6 +294,32 @@
     });
   }
 
+  function renderOrderProgress() {
+    var order = orders.find(function (item) { return item.status !== "cancelled"; });
+    var stageByStatus = { scheduled: 0, processing: 1, ready: 2, completed: 3 };
+    var stageLabels = ["In queue", "Processing", "Ready for pickup", "Completed"];
+    var stage = order ? stageByStatus[order.status] : -1;
+    els.progressOrderLabel.textContent = order ? order.id + " · " + order.service : "No active orders";
+    els.progressCurrentStatus.textContent = stage >= 0 ? stageLabels[stage] : "No active order";
+    els.progressSteps.forEach(function (step, index) {
+      var complete = stage >= 0 && index < stage;
+      var current = stage >= 0 && index === stage;
+      step.classList.toggle("is-complete", complete);
+      step.classList.toggle("is-current", current);
+      step.classList.toggle("is-upcoming", stage < 0 || index > stage);
+      if (current) step.setAttribute("aria-current", "step");
+      else step.removeAttribute("aria-current");
+    });
+
+    var descriptions = [
+      "Your order is in the queue and waiting to be washed.",
+      "Your laundry is being washed and dried.",
+      "Your clean laundry is ready for pickup.",
+      "This order has been completed."
+    ];
+    els.progressDescription.textContent = stage >= 0 ? descriptions[stage] : "Schedule an order to follow its progress here.";
+  }
+
   function confirmSchedule() {
     if (state.slotIndex === null || state.basket === null) return;
     if (state.mode === "Pickup" && (!customer.phone.trim() || !customer.address.trim())) {
@@ -263,6 +340,7 @@
     state.basket = null;
     renderAll();
     renderOrders();
+    renderOrderProgress();
   }
 
   function logOut() {
@@ -345,7 +423,10 @@
 
   buildDays();
   renderCustomer();
+  updateShopStatus();
+  window.setInterval(updateShopStatus, 60000);
   renderAll();
   renderOrders();
+  renderOrderProgress();
   showView(location.hash.slice(1) || "schedule");
 })();

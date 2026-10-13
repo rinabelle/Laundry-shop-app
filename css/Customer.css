@@ -353,6 +353,171 @@ h1 {
   box-shadow: 0 24px 60px rgba(142, 68, 158, 0.1);
 }
 
+.schedule-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(280px, 0.8fr);
+  grid-template-areas: "booking status";
+  align-items: start;
+  gap: 24px;
+}
+
+#view-schedule {
+  max-width: 1180px;
+}
+
+.order-progress {
+  position: sticky;
+  top: 24px;
+  grid-area: status;
+  margin: 0;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid #dfd1e7;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #fff 4%, #fbf7fd 100%);
+  box-shadow: 0 16px 34px rgba(46, 18, 57, 0.08);
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e9dfed;
+}
+
+.progress-summary-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--mint);
+  color: var(--teal-dark);
+}
+
+.progress-summary-icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.progress-summary-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.progress-eyebrow {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.progress-summary-copy > strong {
+  color: var(--plum-text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.progress-current-status {
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.progress-steps {
+  display: grid;
+  margin: 0;
+  list-style: none;
+}
+
+.progress-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 62px;
+  gap: 14px;
+  color: #96899b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progress-step:not(:last-child)::after {
+  position: absolute;
+  top: 48px;
+  left: 19px;
+  width: 2px;
+  height: 14px;
+  background: #e4dce8;
+  content: "";
+}
+
+.progress-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e4dce8;
+  border-radius: 50%;
+  background: #fff;
+  color: #938498;
+}
+
+.progress-marker svg {
+  width: 20px;
+  height: 20px;
+}
+
+.progress-step.is-complete {
+  color: var(--teal-dark);
+}
+
+.progress-step.is-complete .progress-marker {
+  border-color: var(--teal-dark);
+  background: var(--teal-dark);
+  color: #fff;
+}
+
+.progress-step.is-complete::after {
+  background: var(--teal-dark);
+}
+
+.progress-step.is-current {
+  color: var(--plum-text);
+}
+
+.progress-step.is-current .progress-marker {
+  border-color: var(--plum-600);
+  background: var(--plum-tint);
+  color: var(--plum-700);
+  box-shadow: 0 0 0 3px rgba(142, 68, 158, 0.1);
+}
+
+.progress-description {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #eee7f0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.schedule-booking {
+  grid-area: booking;
+  min-width: 0;
+  padding: 32px;
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(142, 68, 158, 0.08);
+}
+
 .pickup-details {
   display: flex;
   align-items: center;
@@ -396,11 +561,25 @@ h1 {
 }
 
 .settings-form {
-  max-width: 780px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  padding: 24px 0 26px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-layout {
+  position: relative;
+  min-height: 500px;
 }
 
 .settings-fields {
   display: grid;
+  width: min(100%, 780px);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
@@ -454,6 +633,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: min(100%, 780px);
   gap: 16px;
   margin-top: 24px;
   padding-top: 20px;
@@ -463,6 +643,236 @@ h1 {
 .settings-status {
   color: var(--teal-dark);
   font-size: 13px;
+}
+
+.support-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.8fr);
+  gap: 42px;
+}
+
+.support-section h2,
+.shop-info h2 {
+  margin-bottom: 16px;
+  font-family: var(--font-head);
+  font-size: 22px;
+  color: var(--plum-text);
+}
+
+.contact-options {
+  border-top: 1px solid var(--line);
+}
+
+.contact-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--plum-text);
+  text-decoration: none;
+}
+
+.contact-option:hover .contact-copy strong,
+.directions-link:hover {
+  color: var(--plum-600);
+}
+
+.contact-symbol {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--mint);
+  color: var(--teal-dark);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.contact-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.contact-copy small {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.contact-arrow {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.sample-contact-note,
+.hours-note {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.faq-section {
+  margin-top: 38px;
+}
+
+.faq-list {
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  position: relative;
+  padding: 16px 28px 16px 0;
+  color: var(--plum-text);
+  font-weight: 700;
+  line-height: 1.45;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  color: var(--teal-dark);
+  content: "+";
+  font-size: 20px;
+  transform: translateY(-50%);
+}
+
+.faq-item[open] summary::after {
+  content: "−";
+}
+
+.faq-item p {
+  padding: 0 24px 16px 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.shop-info {
+  align-self: start;
+  padding-left: 26px;
+  border-left: 1px solid var(--line);
+}
+
+.shop-info address {
+  color: var(--muted);
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1.7;
+}
+
+.hours-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 12px;
+}
+
+.shop-status {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid #c5e6db;
+  border-radius: 999px;
+  background: #edf8f4;
+}
+
+.shop-status-indicator {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9a8b9f;
+}
+
+.shop-status.is-open .shop-status-indicator {
+  background: #168566;
+  box-shadow: 0 0 0 3px rgba(22, 133, 102, 0.13);
+}
+
+.shop-status:not(.is-open) .shop-status-indicator {
+  background: #c34747;
+}
+
+.shop-status:not(.is-open) {
+  border-color: #f0d0d0;
+  background: #fff3f3;
+}
+
+.shop-status-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.shop-status-copy strong {
+  color: var(--plum-text);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.shop-status-copy small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.directions-link {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--teal-dark);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.shop-info h3 {
+  margin: 0;
+  color: var(--plum-text);
+  font-family: var(--font-head);
+  font-size: 16px;
+}
+
+.hours-list {
+  border-top: 1px solid var(--line);
+}
+
+.hours-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.hours-list dt {
+  color: var(--muted);
+}
+
+.hours-list dd {
+  color: var(--plum-text);
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .service-prices {
@@ -985,6 +1395,19 @@ dialog p {
     padding: 24px;
   }
 
+  .schedule-layout {
+    grid-template-columns: minmax(0, 2.2fr) minmax(250px, 0.8fr);
+    gap: 14px;
+  }
+
+  .order-progress {
+    padding: 20px;
+  }
+
+  .schedule-booking {
+    padding: 24px;
+  }
+
   .order {
     grid-template-columns: minmax(0, 1.4fr) 0.8fr 0.8fr auto auto;
     gap: 12px;
@@ -1082,9 +1505,45 @@ dialog p {
   .settings-fields {
     gap: 16px;
   }
+
+  .settings-layout {
+    min-height: 500px;
+  }
+
+  .settings-form {
+    padding: 20px 0;
+  }
+
+  .settings-fields {
+    width: min(100%, 700px);
+  }
+
+  .settings-actions {
+    width: min(100%, 700px);
+  }
+
+  .support-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .shop-info {
+    padding: 24px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
 }
 
 @media (max-width: 700px) {
+  .schedule-layout {
+    grid-template-areas: "booking" "status";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order-progress {
+    position: static;
+  }
+
   .slots {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -1113,6 +1572,14 @@ dialog p {
 }
 
 @media (max-width: 520px) {
+  .nav {
+    flex-wrap: wrap;
+  }
+
+  .nav-item {
+    flex: 1 1 calc(50% - 8px);
+  }
+
   .toggle .pill {
     flex: 1;
   }
@@ -1139,6 +1606,27 @@ dialog p {
     width: 100%;
   }
 
+  .settings-layout {
+    min-height: 0;
+  }
+
+  .settings-form {
+    padding: 16px 0 0;
+  }
+
+  .settings-fields,
+  .settings-actions {
+    width: 100%;
+  }
+
+  .settings-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .field-wide {
+    grid-column: auto;
+  }
+
   .service-price {
     align-items: start;
     flex-direction: column;
@@ -1155,6 +1643,15 @@ dialog p {
 
   .settings-fields {
     grid-template-columns: 1fr;
+  }
+
+  .settings-layout {
+    position: relative;
+    min-height: 0;
+  }
+
+  .settings-form {
+    padding-top: 18px;
   }
 
   .field-wide {
@@ -1208,6 +1705,131 @@ dialog p {
 
   .slot strong {
     font-size: 14px;
+  }
+}
+
+/* Settings: form card + side column */
+#view-settings {
+  max-width: 1180px;
+  text-align: center;
+}
+
+#view-settings .settings-form {
+  text-align: left;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 680px) 64px;
+  justify-content: center;
+  align-items: stretch;
+  gap: 24px;
+  min-height: 0;
+}
+
+.settings-form {
+  padding: 30px;
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(142, 68, 158, 0.08);
+}
+
+.settings-fields,
+.settings-actions {
+  width: 100%;
+}
+
+.settings-rail {
+  position: relative;
+  min-height: 100%;
+}
+
+.settings-rail::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--plum-600) 14%, var(--teal) 86%, transparent);
+  opacity: 0.5;
+  transform: translateX(-50%);
+  content: "";
+}
+
+.rail-end {
+  transform: scaleY(-1);
+}
+
+.rail-dot {
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--teal);
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(-50%);
+}
+
+.rail-dot.p {
+  border-color: var(--plum-600);
+}
+
+.d1 { top: 7%; }
+.d2 { top: 21%; width: 16px; height: 16px; }
+.d3 { top: 37%; }
+.d4 { top: 52%; width: 20px; height: 20px; }
+.d5 { top: 68%; }
+.d6 { top: 83%; width: 16px; height: 16px; }
+
+.rail-bub {
+  position: absolute;
+  border: 1px solid rgba(142, 68, 158, 0.35);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.9), rgba(197, 139, 211, 0.3) 60%, rgba(197, 139, 211, 0.1));
+  animation: bubble-float 9s ease-in-out infinite;
+}
+
+.rb1 { top: 13%; left: 0; width: 26px; height: 26px; }
+.rb2 { top: 44%; right: 0; width: 34px; height: 34px; border-color: rgba(43, 184, 160, 0.5); background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.9), rgba(43, 184, 160, 0.28) 60%, rgba(43, 184, 160, 0.1)); animation-delay: -3s; }
+.rb3 { top: 76%; left: 0; width: 40px; height: 40px; animation-delay: -6s; }
+
+@media (max-width: 1100px) {
+  .settings-layout {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 860px) {
+  .settings-layout {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    gap: 12px;
+  }
+
+  .settings-form {
+    padding: 22px;
+  }
+
+  .rb1,
+  .rb2,
+  .rb3 {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-rail {
+    display: none;
+  }
+
+  .settings-form {
+    padding: 18px;
   }
 }
 
