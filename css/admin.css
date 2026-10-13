@@ -337,6 +337,8 @@ input::placeholder {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 20px;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 .stats {
