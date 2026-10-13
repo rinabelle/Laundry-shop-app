@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fresh 'N Klean — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+
+<div class="bubbles" aria-hidden="true">
+  <div class="bubble" style="width:70px;height:70px;right:6%;top:6%;--dx:-50px;--dy:70px;--t:7s"></div>
+  <div class="bubble" style="width:34px;height:34px;right:30%;top:14%;--dx:40px;--dy:-60px;--t:5s;animation-delay:-2s"></div>
+  <div class="bubble" style="width:110px;height:110px;right:3%;top:48%;--dx:-70px;--dy:-90px;--t:9s;animation-delay:-4s"></div>
+  <div class="bubble" style="width:48px;height:48px;left:6%;bottom:10%;--dx:60px;--dy:-100px;--t:8s;animation-delay:-1s"></div>
+  <div class="bubble" style="width:26px;height:26px;left:20%;top:30%;--dx:-40px;--dy:80px;--t:6s;animation-delay:-3s"></div>
+  <div class="bubble" style="width:60px;height:60px;left:46%;bottom:6%;--dx:50px;--dy:-80px;--t:7.5s;animation-delay:-5s"></div>
+  <div class="bubble" style="width:20px;height:20px;right:18%;bottom:24%;--dx:-30px;--dy:-60px;--t:4.5s;animation-delay:-1.5s"></div>
+  <div class="spark" style="left:48%;top:5%">✦</div>
+  <div class="spark" style="right:9%;bottom:30%;font-size:12px;animation-delay:-1.2s">✦</div>
+  <div class="spark" style="left:12%;top:18%;font-size:14px;animation-delay:-.6s">✦</div>
+</div>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><span class="logo"><i></i></span>Fresh 'N Klean <span class="tag">Admin</span></div>
+    <div class="seg" role="group" aria-label="Pages" id="tabSeg">
+      <button data-v="sales" aria-pressed="true">Sales</button>
+      <button data-v="services" aria-pressed="false">Services</button>
+      <button data-v="history" aria-pressed="false">History</button>
+    </div>
+  </header>
+
+  <main>
+
+
+    <section id="v-sales">
+      <div class="top">
+        <h1>Sales &amp; revenue</h1>
+        <p class="sub" id="rangeLabel"></p>
+      </div>
+
+      <div class="card controls">
+        <div class="seg" role="group" aria-label="Report type" id="typeSeg">
+          <button data-t="daily" aria-pressed="false">Daily</button>
+          <button data-t="weekly" aria-pressed="true">Weekly</button>
+          <button data-t="monthly" aria-pressed="false">Monthly</button>
+        </div>
+        <label class="field date">Report date
+          <input type="date" id="date" required>
+        </label>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Overview</h2>
+          <div class="seg sm" role="group" aria-label="Chart metric" id="metricSeg">
+            <button data-m="earnings" aria-pressed="true">Earnings</button>
+            <button data-m="orders" aria-pressed="false">Completed orders</button>
+          </div>
+        </div>
+        <div class="readout" id="readout" aria-live="polite"></div>
+        <div id="chart"></div>
+        <div class="rule"><span aria-hidden="true">✓</span><span id="ruleTxt"></span></div>
+      </div>
+    </section>
+
+  
+    <section id="v-services" hidden>
+      <div class="top">
+        <h1>Services and pricing</h1>
+        <p class="sub">Edit prices, add new services, or remove old ones.</p>
+      </div>
+      <div class="card">
+        <div class="card-h">
+          <h2>All services</h2>
+          <button class="btn" id="addSvc" type="button">+ Add service</button>
+        </div>
+        <div class="scroll"><table class="cards" id="svcT"></table></div>
+        <div class="card-foot" id="svcCount"></div>
+      </div>
+    </section>
+
+    
+    <section id="v-history" hidden>
+      <div class="top">
+        <h1>History</h1>
+        <p class="sub">All laundry orders and whether they have been picked up.</p>
+      </div>
+      <div class="tools">
+        <label class="sr" for="hq">Search</label>
+        <input id="hq" type="search" placeholder="Search customer name…" maxlength="60">
+        <label class="sr" for="hf">Filter</label>
+        <select id="hf">
+          <option value="">All orders</option>
+          <option value="picked">Picked up</option>
+          <option value="notyet">Not yet picked up</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="scroll"><table class="cards" id="histT"></table></div>
+        <div class="more" id="histMore"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+
+<dialog id="svcDlg">
+  <h2 id="svcTitle">Add service</h2>
+  <form id="svcForm" method="dialog" novalidate>
+    <label class="field">Service name
+      <input id="sName" maxlength="60" autocomplete="off" required>
+    </label>
+    <div class="row2">
+      <label class="field">Unit
+        <select id="sUnit">
+          <option>per kilo</option>
+          <option>per piece</option>
+        </select>
+      </label>
+      <label class="field">Price (₱)
+        <input id="sPrice" type="number" inputmode="decimal" min="1" step="0.01" required>
+      </label>
+    </div>
+    <label class="field">Status
+      <select id="sStatus">
+        <option value="active">Active</option>
+        <option value="hidden">Hidden</option>
+      </select>
+    </label>
+    <div class="err" id="svcErr" role="alert"></div>
+    <div class="row-btns">
+      <button class="btn" type="button" id="svcCancel">Cancel</button>
+      <button class="btn primary" type="submit">Save</button>
+    </div>
+  </form>
+</dialog>
+
+
+<dialog id="delDlg">
+  <h2>Remove service?</h2>
+  <p class="sub" id="delTxt"></p>
+  <div class="row-btns">
+    <button class="btn" type="button" id="delCancel">Cancel</button>
+    <button class="btn danger" type="button" id="delOk">Remove</button>
+  </div>
+</dialog>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
