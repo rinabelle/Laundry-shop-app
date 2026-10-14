@@ -10,13 +10,13 @@
 
 <body>
   <main class="split-container">
-    
     <section class="brand-section">
       <div class="design" aria-hidden="true">
         <svg viewBox="0 0 600 170" preserveAspectRatio="none" style="position:absolute;left:0;bottom:70px;width:100%;height:170px">
           <path d="M-10 130Q190 30 400 92T620 72" fill="none" stroke="#9A9CA8" stroke-width="12" stroke-linecap="round" opacity=".35"/>
           <path d="M-10 150Q230 104 620 124" fill="none" stroke="#C58BD3" stroke-width="5" stroke-linecap="round" opacity=".55"/>
         </svg>
+        
         <svg viewBox="0 0 20 20" style="position:absolute;left:44%;top:13%;width:20px">
           <path d="M10 0l2 8 8 2-8 2-2 8-2-8-8-2 8-2z" fill="#fff" opacity=".85"/>
         </svg>
@@ -30,6 +30,8 @@
         <i class="bub"   style="left:48%;bottom:36%;width:46px;height:46px;animation-delay:-1s"></i>
         <i class="bub p" style="left:7%;top:20%;width:26px;height:26px;animation-delay:-3s"></i>
         <i class="bub g" style="right:40%;bottom:10%;width:28px;height:28px;animation-delay:-5s"></i>
+        <i class="bub"   style="left:25%;top:10%;width:20px;height:20px;animation-delay:-1.5s"></i>
+        <i class="bub p" style="left:35%;bottom:25%;width:65px;height:65px;animation-delay:-3.5s"></i>
       </div>
 
       <div class="header">
@@ -55,13 +57,62 @@
         <h1 class="banner">Your Laundry is clean, <br> ready to go home.</h1>
         <p class="subtext">Book a pickup, follow every load, and collect when it's ready.</p>
       </div>
+
+      <footer class="foot">
+        <div class="f-card">
+          <div class="contact-box">
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path>
+                <circle cx="12" cy="10" r="2.5"></circle>
+              </svg>
+            </span>
+            <div class="contact-details">
+              <h3 class="contact-title">VISITS US</h3>
+              <address class="contact-text">123 Sampaguita Street Quezon City, <br> Metro Manila</address>
+            </div>
+          </div>
+
+          <div class="contact-box">
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                <path d="m3 7 9 6 9-6"></path>
+              </svg>
+            </span>
+            <div class="contact-details">
+              <h3 class="contact-title">EMAIL US</h3>
+              <p class="contact-text">freshnklean@gmail.com</p>
+            </div>         
+          </div>
+
+          <div class="contact-box">
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path>
+              </svg>
+            </span>
+            <div class="contact-details">
+              <h3 class="contact-title">CALL OR TEXT</h3>
+              <p class="contact-text">+63 969 454 3370</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="divider"></div>
+        <p class="brand-copyright">© 2026 Fresh 'N Klean Laundry Hub</p>
+      </footer>
     </section>
-    
+
     <div class="auth-section">
-      
-      <section class="form-section active-section" id="login-view">
+      <section class="form-section active-section" id="customer-login-view">
         <div class="auth-card">
-          <h2 class="login">Log In</h2>
+          <div class="role-tabs">
+            <button type="button" class="role-tab active" data-target="customer-login-view">Customer</button>
+            <button type="button" class="role-tab" data-target="employee-login-view">Employee</button>
+          </div>
+
+          <h2 class="auth-title">Log In</h2>
           <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
 
           <form action="login-form">
@@ -81,23 +132,53 @@
                 <span class="checkmark"></span>
                 <span class="label-text">REMEMBER ME</span>
               </label>
+
               <a href="#reset-view" class="switch-view" data-target="reset-view">FORGOT?</a>
             </div>
 
             <button type="submit" class="submit-btn" value="login">LOG IN</button>
           </form>
-            
-          <!--href="#signup-view" class="switch-view" data-target="signup-view"-->
+
           <footer class="footer-card">
-            <p class="new-acc">Don't have an account? <span><a href="css/images/customer.html">Create an account</a></span></p>
+            <p class="new-acc">Don't have an account? <span><a href="#signup-view" class="switch-view" data-target="signup-view">Create an account</a></span></p>
+          </footer>
+        </div>
+      </section>
+
+      <section class="form-section" id="employee-login-view" style="display: none;">
+        <div class="auth-card">
+          <div class="role-tabs">
+            <button type="button" class="role-tab" data-target="customer-login-view">Customer</button>
+            <button type="button" class="role-tab active" data-target="employee-login-view">Employee</button>
+          </div>
+
+          <h2 class="auth-title">Employee Portal</h2>
+          <p class="sub-text">Log in with your staff credentials to manage laundry queues.</p>
+
+          <form action="employee-login-form">
+            <div class="form-group">
+              <label for="employee-id">STAFF ID OR EMAIL</label>
+              <input type="text" id="employee-id" name="employee_id" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label for="employee-password">PASSWORD</label>
+              <input type="password" id="employee-password" name="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="submit-btn">EMPLOYEE LOGIN</button>
+          </form>
+
+          <footer class="footer-card">
+            <p class="backLogin">Are you a customer? <span><a href="#customer-login-view" class="switch-view" data-target="customer-login-view">Back to log in</a></span></p>
           </footer>
         </div>
       </section>
 
       <section class="form-section" id="signup-view" style="display: none;">
         <div class="auth-card">
-          <h2 class="signup">SIGN UP</h2>
-          <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
+          <h2 class="auth-title">SIGN UP</h2>
+          <p class="sub-text">Join Fresh 'N Klean today for hassle-free pickup scheduling and real-time tracking.</p>
 
           <form action="signup-form" method="POST">
             <div class="form-group">
@@ -114,7 +195,7 @@
               <label for="signup-password">PASSWORD</label>
               <input type="password" id="signup-password" name="password" required autocomplete="new-password">
             </div>
-            
+
             <label class="custom-checkbox">
               <input type="checkbox" name="remember" id="signup-remember">
               <span class="checkmark"></span>
@@ -125,18 +206,17 @@
           </form>
 
           <footer class="footer-card">
-            <p class="backLogin">Already have an account? <span><a href="#login-view" class="switch-view" data-target="login-view">Back to log in</a></span></p>
+            <p class="backLogin">Already have an account? <span><a href="#customer-login-view" class="switch-view" data-target="customer-login-view">Back to log in</a></span></p>
           </footer>
         </div>
       </section>
 
       <section class="form-section" id="reset-view" style="display: none;">
         <div class="auth-card">
-          <h2 class="reset">Forgot password</h2>
-          <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
+          <h2 class="auth-title">Forgot password</h2>
+          <p class="sub-text">Don't worry, we'll help you recover your account and get back to your laundry.</p>
 
           <form action="reset-form" method="POST" id="reset-form-container">
-  
             <div class="reset-step" id="step-email">
               <div class="form-group">
                 <label for="reset-email">EMAIL</label>
@@ -146,7 +226,8 @@
             </div>
 
             <div class="reset-step" id="step-otp" style="display: none;">
-              <p class="sub-text" style="margin-bottom: 16px;">Enter the 6-digit code sent to your email.</p>
+              <p class="sub-text">Enter the 6-digit code sent to your email.</p>
+
               <div class="otp-inputs">
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
@@ -155,6 +236,7 @@
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
               </div>
+
               <button type="button" id="verifyBtn" class="submit-btn">Verify Code</button>
             </div>
 
@@ -163,7 +245,7 @@
                 <label for="reset-password">NEW PASSWORD</label>
                 <input type="password" id="reset-password" name="password" autocomplete="new-password">
               </div>
-              
+
               <div class="form-group">
                 <label for="confirm-password">CONFIRM PASSWORD</label>
                 <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password">
@@ -171,15 +253,14 @@
 
               <button type="submit" class="submit-btn">Update Password</button>
             </div>
-
           </form>
 
           <footer class="footer-card">
-            <p class="new-acc">Don't have an account? <span><a href="#signup-view" class="switch-view" data-target="signup-view">Create an account</a></span></p>
+            <p class="new-acc">Remember your password? <span><a href="#customer-login-view" class="switch-view" data-target="customer-login-view">Back to log in</a></span></p>
           </footer>
         </div>
       </section>
     </div>
   </main>
 </body>
-</html>
+</html> 
