@@ -247,4 +247,10 @@ function renderHistory(){
 }
 ['hq','hf'].forEach(id=>$('#'+id).addEventListener('input',()=>{hLimit=12;renderHistory()}));
 
+const outDlg=$('#outDlg');
+const EMPLOYEE_PAGE='login_signup.html';
+$('#logoutBtn').addEventListener('click',()=>outDlg.showModal());
+$('#outCancel').addEventListener('click',()=>outDlg.close());
+$('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
+
 showView('sales');

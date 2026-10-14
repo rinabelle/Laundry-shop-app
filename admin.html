@@ -28,10 +28,13 @@
 <div class="app">
   <header class="bar">
     <div class="brand"><span class="logo"><i></i></span>Fresh 'N Klean <span class="tag">Admin</span></div>
-    <div class="seg" role="group" aria-label="Pages" id="tabSeg">
-      <button data-v="sales" aria-pressed="true">Sales</button>
-      <button data-v="services" aria-pressed="false">Services</button>
-      <button data-v="history" aria-pressed="false">History</button>
+    <div class="bar-right">
+      <div class="seg" role="group" aria-label="Pages" id="tabSeg">
+        <button data-v="sales" aria-pressed="true">Sales</button>
+        <button data-v="services" aria-pressed="false">Services</button>
+        <button data-v="history" aria-pressed="false">History</button>
+      </div>
+      <button class="btn" id="logoutBtn" type="button">Log out</button>
     </div>
   </header>
 
@@ -152,6 +155,15 @@
   <div class="row-btns">
     <button class="btn" type="button" id="delCancel">Cancel</button>
     <button class="btn danger" type="button" id="delOk">Remove</button>
+  </div>
+</dialog>
+
+<dialog id="outDlg">
+  <h2>Log out?</h2>
+  <p class="sub">You will go back to the employee page.</p>
+  <div class="row-btns">
+    <button class="btn" type="button" id="outCancel">Cancel</button>
+    <button class="btn danger" type="button" id="outOk">Log out</button>
   </div>
 </dialog>
 
