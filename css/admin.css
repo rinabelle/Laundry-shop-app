@@ -230,6 +230,7 @@ h2 {
 }
 
 .seg {
+  position: relative;
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
@@ -238,6 +239,8 @@ h2 {
 }
 
 .seg button {
+  position: relative;
+  z-index: 1;
   border: 0;
   background: none;
   padding: 8px 18px;
@@ -245,11 +248,34 @@ h2 {
   font-weight: 700;
   font-size: 13px;
   color: var(--muted);
+  transition: color 0.25s;
 }
 
 .seg button[aria-pressed="true"] {
-  background: var(--teal);
   color: var(--teal-ink);
+}
+
+.seg .pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 999px;
+  background: var(--teal);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.seg .pill.ready {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seg .pill.ready {
+    transition: none;
+  }
 }
 
 .seg.sm button {
@@ -373,6 +399,7 @@ input::placeholder {
   font-size: clamp(24px, 3vw, 32px);
   margin-top: 2px;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-h {

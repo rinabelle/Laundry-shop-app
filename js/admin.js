@@ -59,11 +59,47 @@ const fmtDT=d=>d.toLocaleString('en-PH',{month:'short',day:'numeric',year:'numer
 function toast(m){const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
 
 
+let animStats=true;
+
+function countUp(el){
+  const to=+el.dataset.to,money=el.dataset.money==='1';
+  const fmt=v=>money?peso(v):String(v);
+  if(!to||matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=fmt(to);return}
+  const t0=performance.now(),D=900;
+  (function f(t){
+    const p=Math.min((t-t0)/D,1),e=1-Math.pow(1-p,3);
+    el.textContent=fmt(Math.round(to*e));
+    if(p<1)requestAnimationFrame(f);
+  })(t0);
+}
+
+$$('.seg').forEach(s=>{
+  const p=document.createElement('span');
+  p.className='pill';p.setAttribute('aria-hidden','true');
+  s.prepend(p);
+});
+function syncPills(snap){
+  $$('.seg').forEach(seg=>{
+    const p=seg.querySelector('.pill'),b=seg.querySelector('[aria-pressed="true"]');
+    if(!p||!b||!seg.offsetWidth)return;
+    if(snap)p.classList.remove('ready');
+    p.style.width=b.offsetWidth+'px';
+    p.style.transform='translateX('+b.offsetLeft+'px)';
+    if(!p.classList.contains('ready')){void p.offsetWidth;p.classList.add('ready')}
+  });
+}
+new MutationObserver(()=>syncPills()).observe(document.body,{subtree:true,attributes:true,attributeFilter:['aria-pressed']});
+addEventListener('resize',()=>syncPills(true));
+if(document.fonts)document.fonts.ready.then(()=>syncPills(true));
+
+
 let view='sales';
 function showView(v){
   view=v;
+  if(v==='sales')animStats=true;
   ['sales','services','employees','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
   $$('#tabSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+  syncPills();
   window.scrollTo(0,0);
   ({sales:renderSales,services:renderServices,employees:()=>window.renderEmployees&&window.renderEmployees(),history:renderHistory})[v]();
 }
@@ -95,8 +131,9 @@ function renderSales(){
     :fmtD(start,{month:'long',year:'numeric'});
 
   $('#stats').innerHTML=
-    `<div class="card stat"><div class="lbl">Total earnings</div><div class="val">${peso(earn)}</div></div>
-     <div class="card stat"><div class="lbl">Completed orders</div><div class="val">${list.length}</div></div>`;
+    `<div class="card stat"><div class="lbl">Total earnings</div><div class="val" data-to="${earn}" data-money="1">${peso(earn)}</div></div>
+     <div class="card stat"><div class="lbl">Completed orders</div><div class="val" data-to="${list.length}">${list.length}</div></div>`;
+  if(animStats){$$('#stats .val').forEach(countUp);animStats=false}
 
   let n,lab,idx,showEvery;
   if(type==='daily'){n=24;lab=i=>(i%12||12)+(i<12?'a':'p');idx=o=>o.completed.getHours();showEvery=3}
@@ -131,7 +168,8 @@ function renderSales(){
 
 $('#typeSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;type=b.dataset.t;
-  $$('#typeSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderSales();
+  $$('#typeSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  animStats=true;renderSales();
 });
 $('#metricSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;metric=b.dataset.m;
