@@ -816,7 +816,7 @@ main section:not([hidden]) {
   }
 }
 
-/* ---------- Employees tab ---------- */
+
 .emp {
   display: flex;
   align-items: center;
@@ -875,7 +875,7 @@ main section:not([hidden]) {
 }
 
 
-/* ---------- Add employee dialog: brighter text ---------- */
+
 #empDlg .field,
 #empDlg .hint {
   color: #fff;
