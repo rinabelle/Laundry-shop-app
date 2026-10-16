@@ -38,7 +38,7 @@ function renderEmployees(){
 }
 window.renderEmployees=renderEmployees;
 
-/* ---- add employee dialog ---- */
+
 const empDlg=$('#empDlg');
 function openEmp(){
   $('#empForm').reset();
@@ -50,7 +50,7 @@ function openEmp(){
 $('#addEmp').addEventListener('click',openEmp);
 $('#empCancel').addEventListener('click',()=>empDlg.close());
 
-/* phone: digits only, max 11 */
+
 $('#ePhone').addEventListener('input',()=>{
   const el=$('#ePhone');
   el.value=el.value.replace(/\D/g,'').slice(0,11);
