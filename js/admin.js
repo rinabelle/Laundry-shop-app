@@ -53,7 +53,7 @@ function getCompletedOrders(start,end){
 }
 const inProgress=()=>orders.filter(o=>['Received','Washing','Folding','Ready for pickup'].includes(o.status)).length;
 
-/* ---------------- helpers ---------------- */
+
 const fmtD=(d,o)=>d.toLocaleDateString('en-PH',o);
 const fmtDT=d=>d.toLocaleString('en-PH',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 function toast(m){const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
@@ -62,10 +62,10 @@ function toast(m){const t=document.createElement('div');t.className='toast';t.se
 let view='sales';
 function showView(v){
   view=v;
-  ['sales','services','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  ['sales','services','employees','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
   $$('#tabSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
   window.scrollTo(0,0);
-  ({sales:renderSales,services:renderServices,history:renderHistory})[v]();
+  ({sales:renderSales,services:renderServices,employees:()=>window.renderEmployees&&window.renderEmployees(),history:renderHistory})[v]();
 }
 $('#tabSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showView(b.dataset.v)});
 
