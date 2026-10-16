@@ -816,7 +816,7 @@ main section:not([hidden]) {
   }
 }
 
-
+/* ---------- Employees tab ---------- */
 .emp {
   display: flex;
   align-items: center;
@@ -892,4 +892,19 @@ main section:not([hidden]) {
 
 #empDlg .btn.sm {
   color: #fff;
+}
+
+
+
+#v-employees .sub,
+#v-employees th,
+#v-employees td small,
+#v-employees .muted-t,
+#v-employees .card-foot,
+#v-employees .empty {
+  color: #fff;
+}
+
+#v-employees td small {
+  opacity: 0.8;
 }
