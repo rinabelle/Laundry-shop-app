@@ -251,7 +251,8 @@ $('#delOk').addEventListener('click',()=>{
 });
 
 
-let hLimit=12;
+const PAGE=10;
+let hPage=1;
 function histFiltered(){
   const q=$('#hq').value.trim().toLowerCase(),f=$('#hf').value;
   return orders.filter(o=>{
@@ -267,8 +268,17 @@ function pickupCell(o){
   if(o.status==='Cancelled')return '<span class="chip cancelled">Cancelled</span>';
   return `<span class="chip wait">Not yet</span><small>${esc(o.status)}</small>`;
 }
+function pageList(cur,last){
+  if(last<=7)return Array.from({length:last},(_,i)=>i+1);
+  if(cur<=4)return [1,2,3,4,5,'gap',last];
+  if(cur>=last-3)return [1,'gap',last-4,last-3,last-2,last-1,last];
+  return [1,'gap',cur-1,cur,cur+1,'gap',last];
+}
 function renderHistory(){
-  const f=histFiltered(),shown=f.slice(0,hLimit);
+  const f=histFiltered();
+  const pages=Math.max(1,Math.ceil(f.length/PAGE));
+  hPage=Math.min(Math.max(hPage,1),pages);
+  const from=(hPage-1)*PAGE,shown=f.slice(from,from+PAGE);
   $('#histT').innerHTML=shown.length
     ?`<thead><tr><th>Name</th><th>Service</th><th class="num">Price</th><th>Date</th><th>Picked up</th></tr></thead><tbody>`+
       shown.map(o=>`<tr>
@@ -278,12 +288,23 @@ function renderHistory(){
         <td data-l="Date">${esc(fmtDT(o.created))}</td>
         <td data-l="Picked up?">${pickupCell(o)}</td></tr>`).join('')+'</tbody>'
     :'<tbody><tr><td class="empty">No orders match your search.</td></tr></tbody>';
-  $('#histMore').innerHTML=f.length>shown.length
-    ?`<span>Showing ${shown.length} of ${f.length}</span><button class="btn sm" id="hMore" type="button">Show more</button>`
-    :`<span>${f.length} order${f.length===1?'':'s'}</span>`;
-  const m=$('#hMore');if(m)m.onclick=()=>{hLimit+=12;renderHistory()};
+  const info=f.length?`Showing ${from+1}–${from+shown.length} of ${f.length}`:'0 orders';
+  const nav=pages>1
+    ?`<nav class="pg-nav" aria-label="History pages">
+        <button class="pg-btn" type="button" data-p="${hPage-1}" aria-label="Previous page" ${hPage===1?'disabled':''}>‹</button>`+
+        pageList(hPage,pages).map(p=>p==='gap'?'<span class="pg-gap" aria-hidden="true">…</span>'
+          :`<button class="pg-btn" type="button" data-p="${p}" aria-label="Page ${p}" ${p===hPage?'aria-current="page"':''}>${p}</button>`).join('')+
+        `<button class="pg-btn" type="button" data-p="${hPage+1}" aria-label="Next page" ${hPage===pages?'disabled':''}>›</button>
+      </nav>`
+    :'';
+  $('#histMore').innerHTML=`<span>${info}</span>${nav}`;
 }
-['hq','hf'].forEach(id=>$('#'+id).addEventListener('input',()=>{hLimit=12;renderHistory()}));
+$('#histMore').addEventListener('click',e=>{
+  const b=e.target.closest('[data-p]');if(!b||b.disabled)return;
+  hPage=+b.dataset.p;renderHistory();
+  window.scrollTo({top:0});
+});
+['hq','hf'].forEach(id=>$('#'+id).addEventListener('input',()=>{hPage=1;renderHistory()}));
 
 const outDlg=$('#outDlg');
 const EMPLOYEE_PAGE='login_signup.html';

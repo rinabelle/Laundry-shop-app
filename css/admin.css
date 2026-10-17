@@ -558,14 +558,6 @@ td small {
 }
 
 
-#v-history .scroll {
-  max-height: calc(100vh - 335px);
-  min-height: 220px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-}
-
 #v-history th {
   position: sticky;
   top: 0;
@@ -576,6 +568,11 @@ td small {
 
 #v-history td {
   padding: 10px 12px;
+}
+
+#v-history td small {
+  display: inline;
+  margin-left: 8px;
 }
 
 .muted-t {
@@ -934,4 +931,66 @@ main section:not([hidden]) {
 
 #v-employees td small {
   opacity: 0.8;
+}
+
+
+#histMore {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.pg-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pg-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.pg-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.pg-btn[aria-current="page"],
+.pg-btn[aria-current="page"]:hover {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--teal-ink);
+}
+
+.pg-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pg-gap {
+  color: var(--muted);
+  padding: 0 2px;
+}
+
+@media (max-width: 640px) {
+  #histMore {
+    justify-content: center;
+  }
+
+  .pg-nav {
+    gap: 4px;
+  }
+
+  .pg-btn {
+    min-width: 30px;
+    height: 32px;
+    padding: 0 6px;
+  }
 }
