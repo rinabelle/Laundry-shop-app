@@ -5,7 +5,7 @@
   --card-2: rgba(255, 255, 255, 0.11);
   --line: rgba(255, 255, 255, 0.14);
   --text: #fff;
-  --muted: #c3adce;
+  --muted: #ffffff;
   --lav: #9a63b5;
   --teal: #2bb8a0;
   --teal-ink: #06322b;
@@ -337,7 +337,7 @@ select option {
 }
 
 input::placeholder {
-  color: #a58eb3;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .controls {
@@ -993,4 +993,19 @@ main section:not([hidden]) {
     height: 32px;
     padding: 0 6px;
   }
+}
+
+.bar-r {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: barUp 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+@keyframes barUp {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-r { animation: none; }
 }

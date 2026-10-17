@@ -313,3 +313,8 @@ $('#outCancel').addEventListener('click',()=>outDlg.close());
 $('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
 
 showView('sales');
+
+const runBars = () =>
+  $$('#chart .bar-r').forEach((r, i) => (r.style.animationDelay = i * 70 + 'ms'));
+new MutationObserver(runBars).observe($('#chart'), { childList: true });
+runBars();
