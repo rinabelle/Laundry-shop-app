@@ -97,11 +97,11 @@ let view='sales';
 function showView(v){
   view=v;
   if(v==='sales')animStats=true;
-  ['sales','services','employees','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  ['sales','services','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
   $$('#tabSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
   syncPills();
   window.scrollTo(0,0);
-  ({sales:renderSales,services:renderServices,employees:()=>window.renderEmployees&&window.renderEmployees(),history:renderHistory})[v]();
+  ({sales:renderSales,services:renderServices,history:renderHistory})[v]();
 }
 $('#tabSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showView(b.dataset.v)});
 

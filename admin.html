@@ -32,7 +32,6 @@
       <div class="seg" role="group" aria-label="Pages" id="tabSeg">
         <button data-v="sales" aria-pressed="true">Sales</button>
         <button data-v="services" aria-pressed="false">Services</button>
-        <button data-v="employees" aria-pressed="false">Employees</button>
         <button data-v="history" aria-pressed="false">History</button>
       </div>
       <button class="btn" id="logoutBtn" type="button">Log out</button>
@@ -88,21 +87,6 @@
         </div>
         <div class="scroll"><table class="cards" id="svcT"></table></div>
         <div class="card-foot" id="svcCount"></div>
-      </div>
-    </section>
-
-    <section id="v-employees" hidden>
-      <div class="top">
-        <h1>Employee accounts</h1>
-        <p class="sub">Create logins for new staff, disable accounts, or remove them.</p>
-      </div>
-      <div class="card">
-        <div class="card-h">
-          <h2>All employees</h2>
-          <button class="btn" id="addEmp" type="button">+ Add employee</button>
-        </div>
-        <div class="scroll"><table class="cards" id="empT"></table></div>
-        <div class="card-foot" id="empCount"></div>
       </div>
     </section>
 
@@ -173,59 +157,6 @@
   </div>
 </dialog>
 
-<dialog id="empDlg">
-  <h2>Add employee</h2>
-  <form id="empForm" method="dialog" novalidate autocomplete="off">
-    <label class="field">Full name
-      <input id="eName" maxlength="60" required>
-    </label>
-    <div class="row2">
-      <label class="field">Username
-        <input id="eUser" maxlength="20" autocapitalize="none" spellcheck="false" required>
-      </label>
-      <label class="field">Phone (optional)
-        <input id="ePhone" type="tel" inputmode="numeric" maxlength="11" pattern="[0-9]{11}" placeholder="09XXXXXXXXX">
-      </label>
-    </div>
-    <label class="field">Role
-      <select id="eRole">
-        <option>Cashier</option>
-        <option>Laundry attendant</option>
-        <option>Delivery rider</option>
-        <option>Manager</option>
-      </select>
-    </label>
-    <div class="row2">
-      <label class="field">New password
-        <input id="ePw" type="password" minlength="8" autocomplete="new-password" required>
-      </label>
-      <label class="field">Confirm password
-        <input id="ePw2" type="password" autocomplete="new-password" required>
-      </label>
-    </div>
-    <div class="pw-tools">
-      <button class="btn sm" type="button" id="ePwShow">Show</button>
-      <button class="btn sm" type="button" id="ePwGen">Generate</button>
-      <button class="btn sm" type="button" id="ePwClear">Clear</button>
-    </div>
-    <p class="hint">The employee should change this password on first login.</p>
-    <div class="err" id="empErr" role="alert"></div>
-    <div class="row-btns">
-      <button class="btn" type="button" id="empCancel">Cancel</button>
-      <button class="btn primary" type="submit">Create account</button>
-    </div>
-  </form>
-</dialog>
-
-<dialog id="empDelDlg">
-  <h2>Remove employee?</h2>
-  <p class="sub" id="empDelTxt"></p>
-  <div class="row-btns">
-    <button class="btn" type="button" id="empDelCancel">Cancel</button>
-    <button class="btn danger" type="button" id="empDelOk">Remove</button>
-  </div>
-</dialog>
-
 <dialog id="outDlg">
   <h2>Log out?</h2>
   <p class="sub">You will go back to the employee page.</p>
@@ -236,6 +167,5 @@
 </dialog>
 
 <script src="js/admin.js"></script>
-<script src="js/emp.js"></script>
 </body>
 </html>
