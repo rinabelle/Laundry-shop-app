@@ -302,6 +302,41 @@ body{
   opacity: 0.9;
 }
 
+.reset-step {
+  position: relative;
+}
+.back-btn {
+  position: absolute;
+  top: -8.5rem;
+  right: -20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+.back-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.back-btn svg path {
+  fill: #4b5563;
+  transition: fill 0.2s ease;
+}
+.back-btn:hover svg path {
+  fill: #111827;
+}
+
 .form-options {
   display: flex;  align-items: center;
   justify-content: space-between;

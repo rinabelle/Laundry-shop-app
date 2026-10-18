@@ -1,0 +1,9 @@
+
+### 2. Test Employee Login
+POST http://localhost:3000/api/employee/login
+Content-Type: application/json
+
+{
+  "employee_email": "employee@example.com",
+  "employee_password": "securepassword123"
+}

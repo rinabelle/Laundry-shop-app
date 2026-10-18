@@ -115,7 +115,7 @@
           <h2 class="auth-title">Log In</h2>
           <p class="sub-text">Pick up where you left off and check your laundry status in real time.</p>
 
-          <form action="login-form">
+          <form id="login-form">
             <div class="form-group">
               <label for="login-email">EMAIL</label>
               <input type="email" id="login-email" name="email" required autocomplete="email">
@@ -155,10 +155,10 @@
           <h2 class="auth-title">Employee Portal</h2>
           <p class="sub-text">Log in with your staff credentials to manage laundry queues.</p>
 
-          <form action="employee-login-form">
+          <form id="employee-login-form">
             <div class="form-group">
-              <label for="employee-id">STAFF ID OR EMAIL</label>
-              <input type="text" id="employee-id" name="employee_id" required autocomplete="username">
+              <label for="employee-email">EMAIL</label>
+              <input type="email" id="employee-email" name="employee-email" required autocomplete="email">
             </div>
 
             <div class="form-group">
@@ -166,7 +166,7 @@
               <input type="password" id="employee-password" name="password" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="submit-btn">EMPLOYEE LOGIN</button>
+            <button type="submit" class="submit-btn" value="login">EMPLOYEE LOGIN</button>
           </form>
 
           <footer class="footer-card">
@@ -183,7 +183,7 @@
           <form action="signup-form" method="POST">
             <div class="form-group">
               <label for="signup-fullname">Full Name</label>
-              <input type="text" id="signup-fullname" name="fullname" required autocomplete="name">
+              <input type="full_name" id="signup-fullname" name="full_name" required autocomplete="name">
             </div>
 
             <div class="form-group">
@@ -236,6 +236,12 @@
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
                 <input type="text" maxlength="1" class="otp-input" pattern="[0-9]*" inputmode="numeric" />
               </div>
+
+            <button class="back-btn" type="button">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 10L8 14L6 14L-2.62268e-07 8L6 2L8 2L8 6L16 6L16 10L8 10Z" fill="#4b5563"></path>
+              </svg>
+            </button>
 
               <button type="button" id="verifyBtn" class="submit-btn">Verify Code</button>
             </div>
