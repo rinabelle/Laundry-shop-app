@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fresh'n Klean | Employee Dashboard</title>
+
+    <link rel="stylesheet" href="css/employee.css">
+
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <div class="logo">FK</div>
+
+            <div>
+                <h1>Fresh'n Klean</h1>
+                <p>Laundry Management System</p>
+            </div>
+        </div>
+
+        <nav class="navigation">
+            <a href="#records" class="active">Customer Records</a>
+        
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <section class="welcome-section">
+            <div>
+                <p class="eyebrow">EMPLOYEE PORTAL</p>
+                <h2>Employee Dashboard</h2>
+                <p>Manage customer information and laundry orders.</p>
+            </div>
+
+            <button type="button" class="add-btn"
+                    onclick="openForm()">
+                + Add New Order
+            </button>
+        </section>
+
+        <section class="records-panel" id="records">
+
+            <div class="table-toolbar">
+                <div>
+                    <h3>Customer Records</h3>
+                    <p>View and manage laundry transactions.</p>
+                </div>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search customer..."
+                    oninput="searchCustomers()"
+                    aria-label="Search customer records"
+                >
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Contact Number</th>
+                            <th>Service</th>
+                            <th>Weight (kg)</th>
+                            <th>Price</th>
+                            <th>Basket No.</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="customerTable">
+                        <tr id="emptyMessage">
+                            <td colspan="9" class="empty-message">
+                                No records yet. Add a new order to get started.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <section class="form-panel" id="orderForm" hidden>
+
+            <div class="form-heading">
+                <div>
+                    <h3>Add Laundry Order</h3>
+                    <p>Enter the customer's laundry information.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="close-btn"
+                    onclick="closeForm()"
+                    aria-label="Close form"
+                >&times;</button>
+            </div>
+
+            <form id="newOrderForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="customerName">Customer Name</label>
+                        <input
+                            type="text"
+                            id="customerName"
+                            placeholder="Enter customer name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">Contact Number</label>
+                        <input
+                            type="tel"
+                            id="contact"
+                            placeholder="Enter contact number"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service">Laundry Service</label>
+                        <select id="service" required>
+                            <option value="">Select service</option>
+                            <option value="Wash">Wash</option>
+                            <option value="Wash and Dry">Wash and Dry</option>
+                            <option value="Full Service">Full Service</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="kilo">Weight (kg)</label>
+                        <input
+                            type="number"
+                            id="kilo"
+                            min="0.1"
+                            step="0.1"
+                            placeholder="Enter laundry weight"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price (₱)</label>
+                        <input
+                            type="number"
+                            id="price"
+                            min="0"
+                            step="0.01"
+                            placeholder="Enter total price"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="basket">Basket Number</label>
+                        <input
+                            type="number"
+                            id="basket"
+                            min="1"
+                            placeholder="Enter basket number"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+                    <button
+                        type="button"
+                        class="cancel-btn"
+                        onclick="closeForm()"
+                    >
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="save-btn">
+                        Save Order
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+    </main>
+<script src="js/employee.js"></script>
+
+</body>
+</html>
