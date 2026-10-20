@@ -24,6 +24,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  zoom: 0.7;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -35,7 +42,7 @@ body {
       transparent 60%
     ),
     var(--bg);
-  min-height: 100vh;
+  min-height: calc(100vh / 0.7);
   line-height: 1.5;
   overflow-x: hidden;
 }
@@ -174,7 +181,7 @@ button {
 .app {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  min-height: calc(100vh / 0.7);
 }
 
 .bar {
@@ -425,7 +432,7 @@ input::placeholder {
 
 
 #chart {
-  max-width: max(340px, calc((100vh - 555px) * 2.667));
+  max-width: min(100%, max(340px, calc((100vh / 0.7 - 600px) * 2.667)));
   margin: 0 auto;
 }
 
