@@ -938,7 +938,7 @@ main section:not([hidden]) {
   .bar-r { animation: none; }
 }
 
-/* ---- glassmorphism preview ---- */
+
 body {
   background:
     radial-gradient(520px 380px at 30% 38%, rgba(43, 184, 160, 0.14), transparent 70%),
