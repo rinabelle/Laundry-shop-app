@@ -635,9 +635,17 @@ td.act .icon-btn + .icon-btn {
 }
 
 dialog {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 22px;
-  background: #33153f;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   color: #fff;
   padding: 26px;
   width: min(440px, 92vw);
@@ -645,7 +653,9 @@ dialog {
 }
 
 dialog::backdrop {
-  background: rgba(15, 4, 22, 0.7);
+  background: rgba(15, 4, 22, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 dialog form {
@@ -669,6 +679,10 @@ dialog form {
 
 dialog form .row-btns {
   margin-top: 6px;
+}
+
+#outDlg .row-btns {
+  justify-content: center;
 }
 
 .err {
@@ -922,4 +936,41 @@ main section:not([hidden]) {
 
 @media (prefers-reduced-motion: reduce) {
   .bar-r { animation: none; }
+}
+
+/* ---- glassmorphism preview ---- */
+body {
+  background:
+    radial-gradient(520px 380px at 30% 38%, rgba(43, 184, 160, 0.14), transparent 70%),
+    radial-gradient(560px 420px at 72% 28%, rgba(255, 110, 180, 0.11), transparent 70%),
+    radial-gradient(640px 460px at 55% 85%, rgba(120, 90, 255, 0.05), transparent 70%),
+    radial-gradient(1200px 700px at 80% -10%, #5a2a6e 0, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+.card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 34px rgba(10, 0, 20, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.bar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.seg {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn, input, select {
+  border-color: rgba(255, 255, 255, 0.25);
 }
