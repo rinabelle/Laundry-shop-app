@@ -87,7 +87,7 @@ if(employeeLoginForm) {
 
       if(response.ok) {
         localStorage.setItem('employeeName', data.employee.full_name)
-        window.location.href = 'admin.html';
+        window.location.href = 'employee.html';
       }else{
         alert(data.error);
       }

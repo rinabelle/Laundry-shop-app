@@ -10,7 +10,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());  
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000
+
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error("Database connection failed:", err.message);
+  } else {
+    console.log("Connected to the customer database successfully!");
+  }
+});
 
 app.get('/', (req, res) => {
     res.send('Server is running and connected!');
@@ -33,15 +41,15 @@ app.post('/api/customer/signup', async (req, res) => {
       const password_hash = await bcrypt.hash(password, saltRounds);
 
       const newCustomer = await pool.query(
-        `INSERT INTO customers (full_name, email, password_hash) 
-        VALUES ($1, $2, $3) 
+        `INSERT INTO customers (full_name, email, password_hash)
+        VALUES ($1, $2, $3)
         RETURNING id, full_name, email, created_at`,
         [full_name, email, password_hash]
       );
 
-      res.status(201).json({ 
-        message: 'Customer registered successfully!', 
-        customer: newCustomer.rows[0] 
+      res.status(201).json({
+        message: 'Customer registered successfully!',
+        customer: newCustomer.rows[0]
       });
 
     } catch (err) {
@@ -81,19 +89,17 @@ app.post('/api/customer/login', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err.message);
+    console.error(err.message)
     res.status(500).json({ error: 'Server error during login.' });
   }
-});
+})
 
-app.post('/api/employee/login', async (req, res) => {
-  try {
+app.post('/api/employee/login', async (req, res) => {  try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Please provide both email and password' });
     }
-
     const employeeResult = await pool.query('SELECT * FROM employees WHERE email = $1', [email]);
     if (employeeResult.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid email or password.' });
@@ -106,7 +112,7 @@ app.post('/api/employee/login', async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, employee.password_hash);
     console.log("Bcrypt match result:", isPasswordValid);
-    
+   
     if (!isPasswordValid) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
@@ -143,8 +149,8 @@ app.post('/api/customer/forgot-password', async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await pool.query(
-      `UPDATE customers 
-       SET reset_token = $1, reset_token_expires = $2 
+      `UPDATE customers
+       SET reset_token = $1, reset_token_expires = $2
        WHERE email = $3`,
       [otp, expiresAt, email]
     );
@@ -175,6 +181,6 @@ app.post('/api/customer/forgot-password', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
 });
