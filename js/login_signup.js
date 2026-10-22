@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+                    document.addEventListener('DOMContentLoaded', () => {
 
   showView('customer-login-view');
 
@@ -44,7 +44,7 @@ if (customerLoginForm) {
     const password = customerLoginForm.querySelector('input[type="password"]').value.trim();
       
     try{
-      const response = await fetch('http://localhost:3000/api/customer/login', {
+      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/login', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
@@ -77,7 +77,7 @@ if(employeeLoginForm) {
     console.log("DEBUG Employee Login Payload:", { email, password });
 
     try{
-      const response = await fetch('http://localhost:3000/api/employee/login', {
+      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/employee/login', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
@@ -109,7 +109,7 @@ if (customerSignForm) {
     const password = customerSignForm.querySelector('input[type="password"]').value.trim();
 
     try{
-      const response = await fetch('http://localhost:3000/api/customer/signup', {
+      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/signup', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({full_name, email, password})
@@ -143,7 +143,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('http://localhost:3000/api/customer/forgot-password', {
+              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/forgot-password', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail })
@@ -203,7 +203,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('http://localhost:3000/api/verify-otp', {
+              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/verify-otp', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail, code: otpCode })
@@ -244,7 +244,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('http://localhost:3000/api/reset-password', {
+              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/reset-password', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail, password: newPassword })

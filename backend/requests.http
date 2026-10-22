@@ -1,9 +1,7 @@
-
-### 2. Test Employee Login
-POST http://localhost:3000/api/employee/login
+POST https://laundry-shop-app-9i58.onrender.com/api/employee/login
 Content-Type: application/json
 
 {
-  "employee_email": "employee@example.com",
-  "employee_password": "securepassword123"
+  "email": "test@laundry.com",
+  "password": "securepassword123"
 }
