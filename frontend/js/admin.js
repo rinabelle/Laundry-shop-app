@@ -131,8 +131,8 @@ function renderSales(){
     :fmtD(start,{month:'long',year:'numeric'});
 
   $('#stats').innerHTML=
-    `<div class="card stat"><div class="lbl">Total earnings</div><div class="val" data-to="${earn}" data-money="1">${peso(earn)}</div></div>
-     <div class="card stat"><div class="lbl">Completed orders</div><div class="val" data-to="${list.length}">${list.length}</div></div>`;
+    `<div class="card stat"><span class="ico teal"><svg class="ic"><use href="#i-coins"/></svg></span><div><div class="lbl">Total earnings</div><div class="val" data-to="${earn}" data-money="1">${peso(earn)}</div></div></div>
+     <div class="card stat violet"><span class="ico violet"><svg class="ic"><use href="#i-clip"/></svg></span><div><div class="lbl">Completed orders</div><div class="val" data-to="${list.length}">${list.length}</div></div></div>`;
   if(animStats){$$('#stats .val').forEach(countUp);animStats=false}
 
   let n,lab,idx,showEvery;
@@ -148,9 +148,9 @@ function renderSales(){
   $('#readout').textContent=list.length?'Hover or tap a bar for details':'No completed orders in this range.';
   const W=640,H=240,pl=44,pb=26,pt=10,top=niceMax(Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}">`;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
   for(let g=0;g<=4;g++){const v=top*g/4,y=pt+(H-pt-pb)*(1-g/4);
-    s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.1)"/><text x="${pl-8}" y="${y+4}" text-anchor="end">${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
+    s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(200,205,255,${g?.18:.45})"${g?' stroke-dasharray="4 6"':''}/><text x="${pl-8}" y="${y+4}" text-anchor="end">${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
   vals.forEach((v,i)=>{
     const h=(H-pt-pb)*v/top,x=pl+i*bw+gap/2,hh=Math.max(h,3);
     s+=`<rect class="bar-r ${v?'':'zero'}" tabindex="0" x="${x}" y="${H-pb-hh}" width="${bw-gap}" height="${hh}" rx="4" data-i="${i}" aria-label="${esc(fullLab(i))}: ${esc(fmtV(v))}"><title>${esc(fullLab(i))}: ${esc(fmtV(v))}</title></rect>`;
@@ -307,7 +307,7 @@ $('#histMore').addEventListener('click',e=>{
 ['hq','hf'].forEach(id=>$('#'+id).addEventListener('input',()=>{hPage=1;renderHistory()}));
 
 const outDlg=$('#outDlg');
-const EMPLOYEE_PAGE='login_signup.html';
+const EMPLOYEE_PAGE='employee.html';
 $('#logoutBtn').addEventListener('click',()=>outDlg.showModal());
 $('#outCancel').addEventListener('click',()=>outDlg.close());
 $('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
