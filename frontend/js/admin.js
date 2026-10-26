@@ -369,6 +369,7 @@ $('#addAcc').addEventListener('click',()=>{
   accDlg.showModal();$('#aName').focus();
 });
 $('#accCancel').addEventListener('click',()=>accDlg.close());
+$('#accX').addEventListener('click',()=>accDlg.close());
 $('#accForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const full_name=$('#aName').value.trim().replace(/\s+/g,' ');

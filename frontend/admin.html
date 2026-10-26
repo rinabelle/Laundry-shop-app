@@ -233,6 +233,9 @@
 
 
 <dialog id="accDlg">
+  <button class="dlg-x" type="button" id="accX" aria-label="Close">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
   <h2>Add employee</h2>
   <form id="accForm" method="dialog" novalidate>
     <label class="field">Full name
@@ -250,7 +253,7 @@
       </label>
     </div>
     <div class="err" id="accErr" role="alert"></div>
-    <div class="row-btns">
+    <div class="row-btns center">
       <button class="btn" type="button" id="accCancel">Cancel</button>
       <button class="btn primary" type="submit">Save</button>
     </div>
