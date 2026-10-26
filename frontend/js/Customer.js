@@ -1,5 +1,5 @@
 (function () {
-  var LOGIN_URL = "login_signup.html";
+  var LOGIN_URL = "index.html";
   var CUSTOMER_KEY = "freshNKleanCustomer";
   var TOTAL_BASKETS = 14;
   var SLOTS = [

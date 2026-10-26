@@ -99,12 +99,12 @@ if(employeeLoginForm) {
   });
 }
 
-const customerSignForm = document.querySelector('form[action="signup-form"]');
+const customerSignForm = document.getElementById('signup-form');
 if (customerSignForm) {
   customerSignForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const full_name = customerSignForm.querySelector('input[name="full_name"]');
+    const full_name = customerSignForm.querySelector('input[name="full_name"]').value.trim();
     const email = customerSignForm.querySelector('input[type="email"]').value.trim();
     const password = customerSignForm.querySelector('input[type="password"]').value.trim();
 
