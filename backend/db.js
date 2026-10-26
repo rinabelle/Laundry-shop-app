@@ -1,6 +1,8 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+console.log('DB target:', process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':****@') : 'DATABASE_URL NOT SET');
+
 const pool = new Pool(
   process.env.DATABASE_URL
     ? {
