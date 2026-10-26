@@ -54,7 +54,7 @@ if (customerLoginForm) {
 
       if (response.ok) {
         localStorage.setItem('customerName', data.customer.full_name);
-        window.location.href = 'customer.html';
+        window.location.href = 'Customer.html';
       }else{
         alert(data.error);
       }
@@ -119,7 +119,7 @@ if (customerSignForm) {
 
       if (response.ok) {
         localStorage.setItem('customerName', full_name);
-        window.location.href = 'customer.html';
+        window.location.href = 'Customer.html';
       }else{
         alert(data.error);
       }
