@@ -97,11 +97,11 @@ let view='sales';
 function showView(v){
   view=v;
   if(v==='sales')animStats=true;
-  ['sales','services','history'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  ['sales','services','history','accounts'].forEach(x=>$('#v-'+x).hidden=x!==v);
   $$('#tabSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
   syncPills();
   window.scrollTo(0,0);
-  ({sales:renderSales,services:renderServices,history:renderHistory})[v]();
+  ({sales:renderSales,services:renderServices,history:renderHistory,accounts:renderAccounts})[v]();
 }
 $('#tabSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showView(b.dataset.v)});
 
@@ -311,6 +311,108 @@ const EMPLOYEE_PAGE='employee.html';
 $('#logoutBtn').addEventListener('click',()=>outDlg.showModal());
 $('#outCancel').addEventListener('click',()=>outDlg.close());
 $('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
+
+const API='https://laundry-shop-app-9i58.onrender.com';
+let accounts=[],accLoaded=false,accErr='',accDeleting=null;
+
+async function api(path,opts={}){
+  let key=sessionStorage.getItem('fnk_admin_key');
+  if(!key){
+    key=(prompt('Enter the admin key to manage employee accounts:')||'').trim();
+    if(!key)throw new Error('Admin key is required.');
+  }
+  const res=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-admin-key':key,...(opts.headers||{})}});
+  const data=await res.json().catch(()=>({}));
+  if(res.status===401){sessionStorage.removeItem('fnk_admin_key');throw new Error(data.error||'Wrong admin key.')}
+  if(!res.ok)throw new Error(data.error||'Request failed.');
+  sessionStorage.setItem('fnk_admin_key',key);
+  return data;
+}
+
+function drawAccounts(){
+  let body;
+  if(accErr)body=`<tbody><tr><td class="empty">${esc(accErr)}</td></tr></tbody>`;
+  else if(!accLoaded)body='<tbody><tr><td class="empty">Loading employees…</td></tr></tbody>';
+  else if(!accounts.length)body='<tbody><tr><td class="empty">No employee accounts yet. Click “+ Add employee”.</td></tr></tbody>';
+  else body=`<thead><tr><th>Name</th><th>Email</th><th>Added</th><th></th></tr></thead><tbody>`+
+    accounts.map(a=>`<tr>
+      <td data-l="Name"><b>${esc(a.full_name)}</b></td>
+      <td data-l="Email" class="muted-t">${esc(a.email)}</td>
+      <td data-l="Added">${esc(a.created_at?fmtD(new Date(a.created_at),{month:'short',day:'numeric',year:'numeric'}):'—')}</td>
+      <td class="act"><button class="icon-btn danger" type="button" data-accdel="${esc(a.id)}" aria-label="Remove ${esc(a.full_name)}">${ICON_DEL}</button></td>
+    </tr>`).join('')+'</tbody>';
+  $('#accT').innerHTML=body;
+  const n=accounts.length;
+  $('#accCount').textContent=accLoaded&&!accErr?`${n} employee${n===1?'':'s'}`:'';
+}
+
+async function loadAccounts(){
+  try{
+    const d=await api('/api/admin/employees');
+    accounts=d.employees||[];accLoaded=true;accErr='';
+  }catch(e){
+    accErr=(e.message||'Could not load employees.')+' Open this tab again to retry.';
+  }
+  drawAccounts();
+}
+
+function renderAccounts(){
+  accErr='';
+  drawAccounts();
+  loadAccounts();
+}
+
+const accDlg=$('#accDlg'),accDelDlg=$('#accDelDlg');
+$('#addAcc').addEventListener('click',()=>{
+  $('#accForm').reset();
+  $('#accErr').textContent='';
+  accDlg.showModal();$('#aName').focus();
+});
+$('#accCancel').addEventListener('click',()=>accDlg.close());
+$('#accForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const full_name=$('#aName').value.trim().replace(/\s+/g,' ');
+  const email=$('#aUser').value.trim().toLowerCase();
+  const password=$('#aPass').value,pw2=$('#aPass2').value;
+  let m='';
+  if(full_name.length<2||full_name.length>60)m='Full name must be 2–60 characters.';
+  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))m='Please enter a valid email address.';
+  else if(password.length<6)m='Password must be at least 6 characters.';
+  else if(password!==pw2)m='Passwords do not match.';
+  if(m){$('#accErr').textContent=m;return}
+
+  const btn=$('#accForm button[type="submit"]');
+  btn.disabled=true;$('#accErr').textContent='';
+  try{
+    await api('/api/admin/employees',{method:'POST',body:JSON.stringify({full_name,email,password})});
+    accDlg.close();
+    toast('Employee account added');
+    await loadAccounts();
+  }catch(err){
+    $('#accErr').textContent=err.message||'Could not add the employee.';
+  }finally{btn.disabled=false}
+});
+
+$('#accT').addEventListener('click',e=>{
+  const b=e.target.closest('[data-accdel]');if(!b)return;
+  accDeleting=accounts.find(a=>String(a.id)===b.dataset.accdel);if(!accDeleting)return;
+  $('#accDelTxt').textContent=`“${accDeleting.full_name}” (${accDeleting.email}) will no longer be able to log in.`;
+  accDelDlg.showModal();
+});
+$('#accDelCancel').addEventListener('click',()=>accDelDlg.close());
+$('#accDelOk').addEventListener('click',async()=>{
+  if(!accDeleting)return;
+  const id=accDeleting.id;
+  accDeleting=null;
+  accDelDlg.close();
+  try{
+    await api('/api/admin/employees/'+encodeURIComponent(id),{method:'DELETE'});
+    toast('Account removed');
+  }catch(err){
+    toast(err.message||'Could not remove the account');
+  }
+  await loadAccounts();
+});
 
 showView('sales');
 

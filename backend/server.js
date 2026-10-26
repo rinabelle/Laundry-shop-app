@@ -100,18 +100,13 @@ app.post('/api/employee/login', async (req, res) => {  try {
     if (!email || !password) {
       return res.status(400).json({ error: 'Please provide both email and password' });
     }
-    const employeeResult = await pool.query('SELECT * FROM employees WHERE email = $1', [email]);
+    const employeeResult = await pool.query('SELECT * FROM employees WHERE lower(email) = lower($1)', [String(email).trim()]);
     if (employeeResult.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
     const employee = employeeResult.rows[0];
 
-    console.log("--- LOGIN DEBUG ---");
-    console.log("User typed password:", password);
-    console.log("Database password_hash:", employee.password_hash);
-
     const isPasswordValid = await bcrypt.compare(password, employee.password_hash);
-    console.log("Bcrypt match result:", isPasswordValid);
    
     if (!isPasswordValid) {
       return res.status(400).json({ error: 'Invalid email or password.' });
@@ -129,6 +124,85 @@ app.post('/api/employee/login', async (req, res) => {  try {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server error during login.' });
+  }
+});
+
+// ---------- ADMIN: employee accounts ----------
+// Set ADMIN_KEY in your .env and in the Render environment variables.
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
+
+function requireAdmin(req, res, next) {
+  if (!ADMIN_KEY) {
+    return res.status(503).json({ error: 'ADMIN_KEY is not set on the server.' });
+  }
+  const given = Buffer.from(String(req.get('x-admin-key') || ''));
+  const real = Buffer.from(ADMIN_KEY);
+  if (given.length !== real.length || !crypto.timingSafeEqual(given, real)) {
+    return res.status(401).json({ error: 'Wrong admin key.' });
+  }
+  next();
+}
+
+pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()')
+  .catch(err => console.error('Could not ensure employees.created_at:', err.message));
+
+app.get('/api/admin/employees', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, full_name, email, created_at FROM employees ORDER BY created_at ASC, id ASC'
+    );
+    res.json({ employees: result.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error while loading employees.' });
+  }
+});
+
+app.post('/api/admin/employees', requireAdmin, async (req, res) => {
+  try {
+    const full_name = String(req.body.full_name || '').trim().replace(/\s+/g, ' ');
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+
+    if (full_name.length < 2 || full_name.length > 60) {
+      return res.status(400).json({ error: 'Full name must be 2-60 characters.' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 100) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    }
+
+    const existing = await pool.query('SELECT 1 FROM employees WHERE lower(email) = $1', [email]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'That email is already registered.' });
+    }
+
+    const password_hash = await bcrypt.hash(password, 10);
+    const created = await pool.query(
+      `INSERT INTO employees (full_name, email, password_hash)
+       VALUES ($1, $2, $3)
+       RETURNING id, full_name, email, created_at`,
+      [full_name, email, password_hash]
+    );
+    res.status(201).json({ message: 'Employee added.', employee: created.rows[0] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error while adding the employee.' });
+  }
+});
+
+app.delete('/api/admin/employees/:id', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM employees WHERE id = $1 RETURNING id', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Employee not found.' });
+    }
+    res.json({ message: 'Employee removed.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error while removing the employee.' });
   }
 });
 
