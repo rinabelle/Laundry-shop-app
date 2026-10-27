@@ -5,6 +5,8 @@ require('dotenv').config();
 const pool = require('./db');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const app = express();
 app.use(cors());
@@ -73,6 +75,10 @@ app.post('/api/customer/login', async (req, res) => {
     }
 
     const customer = customerResult.rows[0];
+
+    if (!customer.password_hash) {
+      return res.status(400).json({ error: 'This account uses Google sign-in. Please click "Continue with Google".' });
+    }
 
     const isPasswordValid = await bcrypt.compare(password, customer.password_hash);
     if (!isPasswordValid) {
@@ -219,6 +225,10 @@ app.post('/api/customer/forgot-password', async (req, res) => {
       return res.status(404).json({ error: 'No account found with this email.' });
     }
 
+    if (!userResult.rows[0].password_hash) {
+      return res.status(400).json({ error: 'This account uses Google sign-in. Please click "Continue with Google".' });
+    }
+
     const otp = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -252,6 +262,49 @@ app.post('/api/customer/forgot-password', async (req, res) => {
   } catch (err) {
     console.error('Server error during forgot-password request:', err);
     res.status(500).json({ error: 'Server error while sending reset email. Please try again later.' });
+  }
+});
+
+app.post('/api/customer/google-login', async (req, res) => {
+  try {
+    const token = (req.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    if (!token) return res.status(401).json({ error: 'Missing token.' });
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user?.email) {
+      return res.status(401).json({ error: 'Invalid Google session.' });
+    }
+
+    const u = data.user;
+    const email = u.email.toLowerCase();
+    const full_name =
+      u.user_metadata?.full_name || u.user_metadata?.name || email.split('@')[0];
+
+    const existing = await pool.query(
+      'SELECT id, full_name, email FROM customers WHERE lower(email) = $1', [email]
+    );
+
+    let customer;
+    if (existing.rows.length > 0) {
+      customer = existing.rows[0];
+      await pool.query(
+        'UPDATE customers SET supabase_user_id = $1 WHERE id = $2 AND supabase_user_id IS NULL',
+        [u.id, customer.id]
+      );
+    } else {
+      const created = await pool.query(
+        `INSERT INTO customers (full_name, email, password_hash, auth_provider, supabase_user_id)
+         VALUES ($1, $2, NULL, 'google', $3)
+         RETURNING id, full_name, email`,
+        [full_name, email, u.id]
+      );
+      customer = created.rows[0];
+    }
+
+    res.json({ message: 'Login successful!', customer });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error during Google login.' });
   }
 });
 

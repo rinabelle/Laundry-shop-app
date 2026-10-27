@@ -1,4 +1,4 @@
-                    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 
   showView('customer-login-view');
 
@@ -264,3 +264,108 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
       });
   }
+
+  const SUPABASE_URL = 'https://mlwwwjmkogmdfvfovwib.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_w6VrT7DDLaXH29ZfwiPVoQ_JUhLrhTD';
+  const API_BASE = 'https://laundry-shop-app-9i58.onrender.com';
+
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('google-btn')?.addEventListener('click', async () => {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+    if (error) alert(error.message);
+  });
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event !== 'SIGNED_IN' || !session) return;
+
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/customer/google-login`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('customerName', data.customer.full_name);
+          window.location.href = 'Customer.html';
+        } else {
+          alert(data.error);
+          await supabaseClient.auth.signOut();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to the server.');
+      }
+    }, 0);
+  });
+
+  const googleBtn = document.getElementById('google-btn');
+
+  function setGoogleLoading(loading) {
+    if (!googleBtn) return;
+    googleBtn.disabled = loading;
+    googleBtn.querySelector('span').textContent =
+      loading ? 'Redirecting…' : 'Continue with Google';
+  }
+
+  googleBtn?.addEventListener('click', async () => {
+    setGoogleLoading(true);   
+
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+
+    if (error) {
+      alert(error.message);
+      setGoogleLoading(false);  
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) setGoogleLoading(false);
+  });
+
+  let handlingGoogleLogin = false;
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event !== 'SIGNED_IN' || !session || handlingGoogleLogin) return;
+    handlingGoogleLogin = true;
+    setGoogleLoading(true);
+
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/customer/google-login`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('customerName', data.customer.full_name);
+          window.location.href = 'Customer.html';
+        } else {
+          alert(data.error);
+          await supabaseClient.auth.signOut();
+          handlingGoogleLogin = false;
+          setGoogleLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to the server.');
+        handlingGoogleLogin = false;
+        setGoogleLoading(false);
+      }
+    }, 0);
+  });
