@@ -146,18 +146,25 @@ function renderSales(){
   const fmtV=v=>metric==='earnings'?peso(v):v+(v===1?' order':' orders');
 
   $('#readout').textContent=list.length?'Hover or tap a bar for details':'No completed orders in this range.';
-  const W=640,H=240,pl=44,pb=26,pt=10,top=niceMax(Math.max(...vals));
+  const W=640,H=240,pl=44,pb=26,pt=22,top=niceMax(Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
   for(let g=0;g<=4;g++){const v=top*g/4,y=pt+(H-pt-pb)*(1-g/4);
-    s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(200,205,255,${g?.18:.45})"${g?' stroke-dasharray="4 6"':''}/><text x="${pl-8}" y="${y+4}" text-anchor="end">${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
+    s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(200,205,255,${g?.18:.45})"${g?' stroke-dasharray="4 6"':''}/><text x="${pl-8}" y="${y+4}" text-anchor="end">${metric==='earnings'?'₱':''}${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
   vals.forEach((v,i)=>{
     const h=(H-pt-pb)*v/top,x=pl+i*bw+gap/2,hh=Math.max(h,3);
     s+=`<rect class="bar-r ${v?'':'zero'}" tabindex="0" x="${x}" y="${H-pb-hh}" width="${bw-gap}" height="${hh}" rx="4" data-i="${i}" aria-label="${esc(fullLab(i))}: ${esc(fmtV(v))}"><title>${esc(fullLab(i))}: ${esc(fmtV(v))}</title></rect>`;
+    if(v>0&&bw>=22){
+      const short=bw<30;
+      const txt=metric==='earnings'?(short?(v>=1000?(Math.round(v/100)/10)+'k':String(Math.round(v))):peso(v)):String(v);
+      s+=`<text class="bar-val" data-i="${i}" x="${x+(bw-gap)/2}" y="${H-pb-hh-5}" text-anchor="middle" font-weight="700" pointer-events="none"${short?' style="font-size:10px"':''}>${esc(txt)}</text>`;
+    }
     if(i%showEvery===0)s+=`<text x="${x+(bw-gap)/2}" y="${H-8}" text-anchor="middle">${esc(lab(i))}</text>`;
   });
   s+='</svg>';
   $('#chart').innerHTML=s;
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)
+    $$('#chart .bar-val').forEach(t=>t.animate([{opacity:0},{opacity:1}],{duration:250,delay:500+(+t.dataset.i)*70,fill:'backwards',easing:'ease-out'}));
   $$('#chart .bar-r').forEach(r=>{
     const show=()=>{const i=+r.dataset.i;$('#readout').innerHTML=`<b>${esc(fullLab(i))}</b> · ${peso(earnV[i])} from ${cntV[i]} completed order${cntV[i]===1?'':'s'}`};
     r.addEventListener('mouseenter',show);r.addEventListener('focus',show);r.addEventListener('click',show);
