@@ -117,6 +117,22 @@ function getRange(t,d){
 }
 function niceMax(max){if(max<=0)return 4;const raw=max/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p*4}
 
+function chartAxis(metric,t,max){
+  if(metric==='earnings'){
+    if(t==='daily'){ 
+      if(max<=800)return{top:800,step:200};
+      const step=[250,500,1000,2000,2500,5000,10000,20000,50000,100000].find(x=>Math.ceil(max/x)<=4);
+      if(step)return{top:Math.ceil(max/step)*step,step};
+    }
+    const top=niceMax(max);return{top,step:top/4};
+  }
+  const base={daily:{top:2,step:1},weekly:{top:4,step:1},monthly:{top:8,step:2}}[t];
+  if(max<=base.top)return base;
+  const step=[1,2,5,10,20,50,100,200,500,1000].find(x=>Math.ceil(max/x)<=4);
+  if(step)return{top:Math.ceil(max/step)*step,step};
+  const top=niceMax(max);return{top,step:top/4};
+}
+
 function renderSales(){
   const dateEl=$('#date');
   let d=fromInput(dateEl.value);
@@ -146,10 +162,11 @@ function renderSales(){
   const fmtV=v=>metric==='earnings'?peso(v):v+(v===1?' order':' orders');
 
   $('#readout').textContent=list.length?'Hover or tap a bar for details':'No completed orders in this range.';
-  const W=640,H=240,pl=44,pb=26,pt=22,top=niceMax(Math.max(...vals));
+  const W=640,H=240,pl=44,pb=26,pt=22,{top,step:yStep}=chartAxis(metric,type,Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
-  for(let g=0;g<=4;g++){const v=top*g/4,y=pt+(H-pt-pb)*(1-g/4);
+  const lines=Math.round(top/yStep);
+  for(let g=0;g<=lines;g++){const v=yStep*g,y=pt+(H-pt-pb)*(1-v/top);
     s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(200,205,255,${g?.18:.45})"${g?' stroke-dasharray="4 6"':''}/><text x="${pl-8}" y="${y+4}" text-anchor="end">${metric==='earnings'?'₱':''}${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
   vals.forEach((v,i)=>{
     const h=(H-pt-pb)*v/top,x=pl+i*bw+gap/2,hh=Math.max(h,3);
