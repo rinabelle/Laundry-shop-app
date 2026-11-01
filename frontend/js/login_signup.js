@@ -74,7 +74,7 @@ if (customerLoginForm) {
     const password = document.getElementById('login-password').value.trim();
       
     try{
-      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/login', {
+      const response = await fetch('/api/customer/login', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
@@ -110,7 +110,7 @@ if(employeeLoginForm) {
     console.log("DEBUG Employee Login Payload:", { email, password });
 
     try{
-      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/employee/login', {
+      const response = await fetch('/api/employee/login', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
@@ -142,7 +142,7 @@ if (customerSignForm) {
     const password = document.getElementById('signup-password').value.trim();
 
     try{
-      const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/signup', {
+      const response = await fetch('/api/customer/signup', {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({full_name, email, password})
@@ -167,6 +167,7 @@ if (customerSignForm) {
 }
 
 let userEmail = '';
+let userCode = '';
   
 const sendCodeBtn = document.getElementById('sendCodeBtn');
     if (sendCodeBtn) {
@@ -179,7 +180,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/forgot-password', {
+              const response = await fetch('/api/customer/forgot-password', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail })
@@ -239,7 +240,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/verify-otp', {
+              const response = await fetch('/api/verify-otp', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail, code: otpCode })
@@ -248,6 +249,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
               const data = await response.json();
 
               if (response.ok) {
+                  userCode = otpCode;
                   alert('Code verified successfully!');
                   document.getElementById('step-otp').style.display = 'none';
                   document.getElementById('step-new-password').style.display = 'block';
@@ -280,10 +282,10 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/reset-password', {
+              const response = await fetch('/api/reset-password', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email: userEmail, password: newPassword })
+                  body: JSON.stringify({ email: userEmail, code: userCode, password: newPassword })
               });
 
               const data = await response.json();
@@ -341,7 +343,7 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
 
   const SUPABASE_URL = 'https://mlwwwjmkogmdfvfovwib.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_w6VrT7DDLaXH29ZfwiPVoQ_JUhLrhTD';
-  const API_BASE = 'https://laundry-shop-app-9i58.onrender.com';
+  const API_BASE = '';
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

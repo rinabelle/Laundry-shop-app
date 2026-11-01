@@ -336,7 +336,7 @@ $('#logoutBtn').addEventListener('click',()=>outDlg.showModal());
 $('#outCancel').addEventListener('click',()=>outDlg.close());
 $('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
 
-const API='https://laundry-shop-app-9i58.onrender.com';
+const API='';
 let accounts=[],accLoaded=false,accErr='',accDeleting=null;
 
 async function api(path,opts={}){

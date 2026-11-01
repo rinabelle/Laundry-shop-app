@@ -4,13 +4,18 @@ const cors = require('cors');
 require('dotenv').config();
 const pool = require('./db');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const app = express();
 app.use(cors());
 app.use(express.json());  
+
+// Serve the frontend (plain HTML/CSS/JS) from the same server and domain
+const path = require('path');
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+app.use(express.static(FRONTEND_DIR));
+app.get('/', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
 
 const PORT = process.env.PORT || 3000
 
@@ -239,22 +244,31 @@ app.post('/api/customer/forgot-password', async (req, res) => {
       [otp, expiresAt, email]
     );
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+    // Render blocks SMTP ports, so the email is sent through Brevo's HTTPS API instead.
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY is not set on the server.');
+    }
+
+    const emailResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: { name: "Fresh 'N Klean Laundry Hub", email: process.env.EMAIL_USER },
+        to: [{ email }],
+        subject: 'Password Reset OTP - Laundry App',
+        textContent: `Hello,\n\nYour One-Time Password (OTP) to reset your password is: ${otp}\n\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`
+      })
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Password Reset OTP - Laundry App',
-      text: `Hello,\n\nYour One-Time Password (OTP) to reset your password is: ${otp}\n\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`
-    };
+    if (!emailResponse.ok) {
+      const detail = await emailResponse.text();
+      throw new Error(`Brevo API error ${emailResponse.status}: ${detail}`);
+    }
 
-    await transporter.sendMail(mailOptions);
     console.log(`OTP email successfully sent to ${email}`);
 
     res.json({ message: 'OTP sent successfully to your email!' });
@@ -264,6 +278,64 @@ app.post('/api/customer/forgot-password', async (req, res) => {
     res.status(500).json({ error: 'Server error while sending reset email. Please try again later.' });
   }
 });
+
+app.post('/api/verify-otp', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ error: 'Please provide your email and the code.' });
+    }
+
+    const result = await pool.query(
+      'SELECT reset_token, reset_token_expires FROM customers WHERE email = $1',
+      [email]
+    );
+
+    const user = result.rows[0];
+    const isValid =
+      user &&
+      user.reset_token &&
+      user.reset_token === String(code).trim() &&
+      user.reset_token_expires &&
+      new Date(user.reset_token_expires) > new Date();
+
+    if (!isValid) {
+      return res.status(400).json({ error: 'Invalid or expired code.' });
+    }
+
+    res.json({ message: 'Code verified successfully!' });
+
+  } catch (err) {
+    console.error('Server error during verify-otp request:', err);
+    res.status(500).json({ error: 'Server error while verifying the code. Please try again later.' });
+  }
+});
+
+  app.post('/api/reset-password', async (req, res) => {
+    try {
+      const { email, code, password } = req.body;
+      if (!email || !code || !password) {
+        return res.status(400).json({ error: 'Missing email, code or new password.' });
+      }
+      const result = await pool.query(
+        'SELECT reset_token, reset_token_expires FROM customers WHERE email = $1', [email]);
+      const user = result.rows[0];
+      const ok = user && user.reset_token &&
+        user.reset_token === String(code).trim() &&
+        user.reset_token_expires && new Date(user.reset_token_expires) > new Date();
+      if (!ok) return res.status(400).json({ error: 'Invalid or expired code.' });
+
+      const hash = await bcrypt.hash(password, 10);
+      await pool.query(
+        `UPDATE customers SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL
+        WHERE email = $2`, [hash, email]);
+      res.json({ message: 'Password updated successfully!' });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: 'Server error while resetting the password.' });
+    }
+  });
 
 app.post('/api/customer/google-login', async (req, res) => {
   try {
