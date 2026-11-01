@@ -1,3 +1,25 @@
+const SESSION_KEY = 'fnk_session';
+const REMEMBER_EMAIL_KEY = 'fnk_remember_email';
+
+function saveSession(role, name, email, remember) {
+  localStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
+  (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify({ role, name, email }));
+}
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)); }
+  catch (e) { return null; }
+}
+function rememberEmail(email, remember) {
+  if (remember) localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+  else localStorage.removeItem(REMEMBER_EMAIL_KEY);
+}
+
+const existingSession = getSession();
+if (existingSession && existingSession.role === 'customer') {
+  window.location.replace('Customer.html');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   showView('customer-login-view');
@@ -10,6 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetId) {
         showView(targetId);
       }
+    });
+  });
+
+
+  document.querySelectorAll('.m-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const auth = document.querySelector('.auth-section');
+      if (auth) auth.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 
@@ -41,7 +71,7 @@ if (customerLoginForm) {
     e.preventDefault();
 
     const email = customerLoginForm.querySelector('input[type="email"]').value.trim();
-    const password = customerLoginForm.querySelector('input[type="password"]').value.trim();
+    const password = document.getElementById('login-password').value.trim();
       
     try{
       const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/login', {
@@ -53,7 +83,10 @@ if (customerLoginForm) {
       console.log("Server response:", data.error || data.message || data);
 
       if (response.ok) {
+        const remember = document.getElementById('login-remember').checked;
         localStorage.setItem('customerName', data.customer.full_name);
+        saveSession('customer', data.customer.full_name, data.customer.email, remember);
+        rememberEmail(email, remember);
         window.location.href = 'Customer.html';
       }else{
         alert(data.error);
@@ -72,7 +105,7 @@ if(employeeLoginForm) {
     e.preventDefault();
 
     const email = employeeLoginForm.querySelector('input[type="email"]').value.trim();
-    const password = employeeLoginForm.querySelector('input[type="password"]').value.trim();
+    const password = document.getElementById('password').value.trim();
 
     console.log("DEBUG Employee Login Payload:", { email, password });
 
@@ -106,7 +139,7 @@ if (customerSignForm) {
 
     const full_name = customerSignForm.querySelector('input[name="full_name"]').value.trim();
     const email = customerSignForm.querySelector('input[type="email"]').value.trim();
-    const password = customerSignForm.querySelector('input[type="password"]').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
 
     try{
       const response = await fetch('https://laundry-shop-app-9i58.onrender.com/api/customer/signup', {
@@ -118,7 +151,10 @@ if (customerSignForm) {
       console.log("Sending to server:", { full_name, email, password });
 
       if (response.ok) {
+        const remember = document.getElementById('signup-remember').checked;
         localStorage.setItem('customerName', full_name);
+        saveSession('customer', full_name, email, remember);
+        rememberEmail(email, remember);
         window.location.href = 'Customer.html';
       }else{
         alert(data.error);
@@ -265,72 +301,76 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
       });
   }
 
+
+(function () {
+  const saved = localStorage.getItem(REMEMBER_EMAIL_KEY);
+  const emailInput = document.getElementById('login-email');
+  const rememberBox = document.getElementById('login-remember');
+  if (saved && emailInput && rememberBox) {
+    emailInput.value = saved;
+    rememberBox.checked = true;
+  }
+})();
+
+const EYE_ICONS =
+  '<svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
+  '<svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+document.querySelectorAll('input[type="password"]').forEach(input => {
+  const wrap = document.createElement('div');
+  wrap.className = 'pw-field';
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pw-toggle';
+  btn.setAttribute('aria-label', 'Show password');
+  btn.setAttribute('aria-pressed', 'false');
+  btn.innerHTML = EYE_ICONS;
+
+  btn.addEventListener('mousedown', e => e.preventDefault());
+  btn.addEventListener('click', () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', String(show));
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  });
+  wrap.appendChild(btn);
+});
+
   const SUPABASE_URL = 'https://mlwwwjmkogmdfvfovwib.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_w6VrT7DDLaXH29ZfwiPVoQ_JUhLrhTD';
   const API_BASE = 'https://laundry-shop-app-9i58.onrender.com';
 
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  document.getElementById('google-btn')?.addEventListener('click', async () => {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + window.location.pathname,
-        queryParams: { prompt: 'select_account' }
-      }
-    });
-    if (error) alert(error.message);
-  });
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event !== 'SIGNED_IN' || !session) return;
-
-    setTimeout(async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/customer/google-login`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-          localStorage.setItem('customerName', data.customer.full_name);
-          window.location.href = 'Customer.html';
-        } else {
-          alert(data.error);
-          await supabaseClient.auth.signOut();
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Could not connect to the server.');
-      }
-    }, 0);
-  });
-
-  const googleBtn = document.getElementById('google-btn');
+  const googleButtons = document.querySelectorAll('.google-btn');
 
   function setGoogleLoading(loading) {
-    if (!googleBtn) return;
-    googleBtn.disabled = loading;
-    googleBtn.querySelector('span').textContent =
-      loading ? 'Redirecting…' : 'Continue with Google';
+    googleButtons.forEach(btn => {
+      btn.disabled = loading;
+      btn.querySelector('span').textContent = loading ? 'Redirecting…' : btn.dataset.label;
+    });
   }
 
-  googleBtn?.addEventListener('click', async () => {
-    setGoogleLoading(true);   
+  googleButtons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      setGoogleLoading(true);
 
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin + window.location.pathname,
-        queryParams: { prompt: 'select_account' }
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + window.location.pathname,
+          queryParams: { prompt: 'select_account' }
+        }
+      });
+
+      if (error) {
+        alert(error.message);
+        setGoogleLoading(false);
       }
     });
-
-    if (error) {
-      alert(error.message);
-      setGoogleLoading(false);  
-    }
   });
 
   window.addEventListener('pageshow', (e) => {
@@ -354,6 +394,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
 
         if (response.ok) {
           localStorage.setItem('customerName', data.customer.full_name);
+          saveSession('customer', data.customer.full_name, data.customer.email, true);
           window.location.href = 'Customer.html';
         } else {
           alert(data.error);

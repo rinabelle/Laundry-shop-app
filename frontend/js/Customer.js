@@ -346,6 +346,12 @@
   function logOut() {
     els.logoutDialog.close();
     try { sessionStorage.clear(); } catch (e) {}
+    try {
+      localStorage.removeItem("fnk_session");
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf("sb-") === 0 && /-auth-token$/.test(k)) localStorage.removeItem(k);
+      });
+    } catch (e) {}
     if (LOGIN_URL) {
       window.location.href = LOGIN_URL;
       return;
