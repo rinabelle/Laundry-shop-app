@@ -44,6 +44,13 @@ for(let i=0;i<260;i++){
   if(o.created>now)o.created=new Date(now.getTime()-R()*36e5*3);
   orders.push(o);
 }
+
+[[3,'Ready for pickup'],[3,'Washing'],[4,'Folding'],[6,'Ready for pickup']].forEach(([daysAgo,status])=>{
+  const sv=services[Math.floor(R()*4)];
+  const qty=sv.unit==='per kilo'?Math.round((2+R()*8)*2)/2:1+Math.floor(R()*3);
+  orders.push({name:NAMES[Math.floor(R()*NAMES.length)],svc:sv.name,price:Math.round(sv.price*qty),
+    created:new Date(today0.getTime()-daysAgo*DAY+(8+R()*10)*36e5),status,completed:null});
+});
 orders.sort((a,b)=>a.created-b.created).forEach((o,i)=>o.id='LDR-'+String(i+1).padStart(4,'0'));
 orders.reverse();   
 
@@ -93,8 +100,9 @@ addEventListener('resize',()=>syncPills(true));
 if(document.fonts)document.fonts.ready.then(()=>syncPills(true));
 
 
-let view='sales';
+let view='sales',prevView='sales';
 function showView(v){
+  if(v!=='accounts')prevView=v;
   view=v;
   if(v==='sales')animStats=true;
   ['sales','services','history','accounts'].forEach(x=>$('#v-'+x).hidden=x!==v);
@@ -103,7 +111,10 @@ function showView(v){
   window.scrollTo(0,0);
   ({sales:renderSales,services:renderServices,history:renderHistory,accounts:renderAccounts})[v]();
 }
-$('#tabSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showView(b.dataset.v)});
+$('#tabSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.v==='accounts')gateAccounts();else showView(b.dataset.v);
+});
 
 
 let type='weekly',metric='earnings';
@@ -162,7 +173,7 @@ function renderSales(){
   const fmtV=v=>metric==='earnings'?peso(v):v+(v===1?' order':' orders');
 
   $('#readout').textContent=list.length?'Hover or tap a bar for details':'No completed orders in this range.';
-  const W=640,H=240,pl=44,pb=26,pt=22,{top,step:yStep}=chartAxis(metric,type,Math.max(...vals));
+  const W=960,H=280,pl=56,pb=30,pt=24,{top,step:yStep}=chartAxis(metric,type,Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
   const lines=Math.round(top/yStep);
@@ -188,7 +199,55 @@ function renderSales(){
   });
   const ip=inProgress();
   $('#ruleTxt').textContent=`Only orders marked Completed (picked up) are counted. ${ip} order${ip===1?' is':'s are'} still in progress and not included.`;
+  renderBreakdown(list,earn);
+  renderStuck();
 }
+
+const BRK_COLORS=['#33e3cb','#a98bf5','#ffd47a','#ff8fb1','#7ec8ff'];
+function renderBreakdown(list,earn){
+  const m=new Map();
+  list.forEach(o=>{const r=m.get(o.svc)||{name:o.svc,rev:0,n:0};r.rev+=o.price;r.n++;m.set(o.svc,r)});
+  const rows=[...m.values()].sort((a,b)=>b.rev-a.rev);
+  if(!rows.length){
+    $('#brk').innerHTML='<div class="brk-empty">No completed orders in this range.</div>';
+    $('#brkNote').textContent='';
+    return;
+  }
+  const top=rows[0].rev||1;
+  $('#brk').innerHTML=rows.map((r,i)=>
+    `<div><div class="brk-h"><span>${esc(r.name)}</span><span>${peso(r.rev)} · ${r.n} order${r.n===1?'':'s'}</span></div>
+      <div class="brk-track"><div class="brk-fill" style="width:${Math.max(r.rev/top*100,3)}%;background:${BRK_COLORS[i%BRK_COLORS.length]}"></div></div></div>`).join('');
+  $('#brkNote').textContent=`Top earner: ${rows[0].name} (${Math.round(rows[0].rev/earn*100)}% of revenue)`;
+}
+
+const STUCK_DAYS=2,STUCK_SHOW=2;
+let stuckAll=false;
+function renderStuck(){
+  const nowT=Date.now();
+  const list=orders
+    .filter(o=>o.status!=='Completed'&&o.status!=='Cancelled'&&nowT-o.created>=STUCK_DAYS*DAY)
+    .sort((a,b)=>a.created-b.created);
+  const n=list.length;
+  $('#stuckSub').textContent=`Orders not completed after ${STUCK_DAYS} days · ${n} need${n===1?'s':''} attention`;
+  const shown=stuckAll?list:list.slice(0,STUCK_SHOW);
+  $('#stuckBody').innerHTML=shown.map(o=>{
+    const days=Math.floor((nowT-o.created)/DAY);
+    return `<tr>
+      <td data-l="Customer"><b>${esc(o.name)}</b></td>
+      <td data-l="Service">${esc(o.svc)}</td>
+      <td data-l="Price" class="num"><b>${peso(o.price)}</b></td>
+      <td data-l="Status"><span class="badge ${o.status==='Ready for pickup'?'b-ready':'b-pending'}">${esc(o.status)}</span></td>
+      <td data-l="Waiting"><span class="badge ${days>=4?'d-late':'d-warn'}">${days} day${days===1?'':'s'}</span></td></tr>`;
+  }).join('');
+  $('#stuckWrap').hidden=!n;
+  const em=$('#stuckEmpty');
+  em.hidden=n>0;
+  em.textContent=n?'':'No stuck orders. Everything is moving on time.';
+  const tg=$('#stuckToggle');
+  tg.hidden=n<=STUCK_SHOW;
+  tg.textContent=stuckAll?'Show less':`Show all (${n})`;
+}
+$('#stuckToggle').addEventListener('click',()=>{stuckAll=!stuckAll;renderStuck()});
 
 $('#typeSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;type=b.dataset.t;
@@ -279,8 +338,10 @@ const PAGE=10;
 let hPage=1;
 function histFiltered(){
   const q=$('#hq').value.trim().toLowerCase(),f=$('#hf').value;
+  const day=fromInput($('#hdate').value);
   return orders.filter(o=>{
     if(q&&!o.name.toLowerCase().includes(q))return false;
+    if(day&&startOfDay(o.created).getTime()!==day.getTime())return false;
     if(f==='picked')return o.status==='Completed';
     if(f==='notyet')return o.status!=='Completed'&&o.status!=='Cancelled';
     if(f==='cancelled')return o.status==='Cancelled';
@@ -311,7 +372,7 @@ function renderHistory(){
         <td data-l="Price" class="num"><b>${peso(o.price)}</b></td>
         <td data-l="Date">${esc(fmtDT(o.created))}</td>
         <td data-l="Picked up?">${pickupCell(o)}</td></tr>`).join('')+'</tbody>'
-    :'<tbody><tr><td class="empty">No orders match your search.</td></tr></tbody>';
+    :`<tbody><tr><td class="empty">${$('#hdate').value?'No orders on this date.':'No orders match your search.'}</td></tr></tbody>`;
   const info=f.length?`Showing ${from+1}–${from+shown.length} of ${f.length}`:'0 orders';
   const nav=pages>1
     ?`<nav class="pg-nav" aria-label="History pages">
@@ -328,41 +389,84 @@ $('#histMore').addEventListener('click',e=>{
   hPage=+b.dataset.p;renderHistory();
   window.scrollTo({top:0});
 });
-['hq','hf'].forEach(id=>$('#'+id).addEventListener('input',()=>{hPage=1;renderHistory()}));
-
+['hq','hf','hdate'].forEach(id=>$('#'+id).addEventListener('input',()=>{hPage=1;renderHistory()}));
+$('#hdate').max=toInput(today0);
 const outDlg=$('#outDlg');
 const EMPLOYEE_PAGE='employee.html';
 $('#logoutBtn').addEventListener('click',()=>outDlg.showModal());
 $('#outCancel').addEventListener('click',()=>outDlg.close());
-$('#outOk').addEventListener('click',()=>{outDlg.close();window.location.href=EMPLOYEE_PAGE});
+$('#outOk').addEventListener('click',()=>{
+  try{sessionStorage.removeItem(KEY_NAME)}catch(_){}
+  outDlg.close();window.location.href=EMPLOYEE_PAGE;
+});
 
 const API='';
+const KEY_NAME='fnk_admin_key';
 let accounts=[],accLoaded=false,accErr='',accDeleting=null;
 
-async function api(path,opts={}){
-  let key=sessionStorage.getItem('fnk_admin_key');
-  if(!key){
-    key=(prompt('Enter the admin key to manage employee accounts:')||'').trim();
-    if(!key)throw new Error('Admin key is required.');
+async function api(path,opts={},keyOverride){
+  const key=keyOverride||sessionStorage.getItem(KEY_NAME);
+  if(!key){const e=new Error('Admin key is required.');e.status=401;throw e}
+  let res;
+  try{
+    res=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-admin-key':key,...(opts.headers||{})}});
+  }catch(_){
+    throw new Error('Cannot reach the server. Make sure the backend is running.');
   }
-  const res=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-admin-key':key,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({}));
-  if(res.status===401){sessionStorage.removeItem('fnk_admin_key');throw new Error(data.error||'Wrong admin key.')}
-  if(!res.ok)throw new Error(data.error||'Request failed.');
-  sessionStorage.setItem('fnk_admin_key',key);
+  if(res.status===401){
+    sessionStorage.removeItem(KEY_NAME);
+    const e=new Error(data.error||'Wrong admin key.');e.status=401;throw e;
+  }
+  if(!res.ok)throw new Error(data.error||(res.status===404?'Cannot reach the employee server. Open this page through the backend.':'Request failed.'));
+  sessionStorage.setItem(KEY_NAME,key);
   return data;
 }
+
+const keyDlg=$('#keyDlg');
+function openKeyDlg(msg){
+  $('#keyForm').reset();
+  $('#keyErr').textContent=msg||'';
+  keyDlg.showModal();$('#kInput').focus();
+}
+function gateAccounts(){
+  if(sessionStorage.getItem(KEY_NAME))showView('accounts');
+  else openKeyDlg();
+}
+function lockAccounts(){
+  accDlg.close();accDelDlg.close();
+  accounts=[];accLoaded=false;
+  showView(prevView);
+  openKeyDlg('That admin key was not accepted. Please enter it again.');
+}
+$('#keyCancel').addEventListener('click',()=>keyDlg.close());
+$('#keyForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const key=$('#kInput').value.trim();
+  if(!key){$('#keyErr').textContent='Please enter the admin key.';return}
+  const btn=$('#keyForm button[type="submit"]');
+  btn.disabled=true;$('#keyErr').textContent='';
+  try{
+    const d=await api('/api/admin/employees',{},key);
+    accounts=d.employees||[];accLoaded=true;accErr='';
+    keyDlg.close();
+    showView('accounts');
+  }catch(err){
+    $('#keyErr').textContent=err.message||'Could not verify the admin key.';
+    $('#kInput').select();
+  }finally{btn.disabled=false}
+});
 
 function drawAccounts(){
   let body;
   if(accErr)body=`<tbody><tr><td class="empty">${esc(accErr)}</td></tr></tbody>`;
   else if(!accLoaded)body='<tbody><tr><td class="empty">Loading employees…</td></tr></tbody>';
   else if(!accounts.length)body='<tbody><tr><td class="empty">No employee accounts yet. Click “+ Add employee”.</td></tr></tbody>';
-  else body=`<thead><tr><th>Name</th><th>Email</th><th>Added</th><th></th></tr></thead><tbody>`+
+  else body=`<thead><tr><th>Name</th><th>Email</th><th>Date</th><th></th></tr></thead><tbody>`+
     accounts.map(a=>`<tr>
       <td data-l="Name"><b>${esc(a.full_name)}</b></td>
       <td data-l="Email" class="muted-t">${esc(a.email)}</td>
-      <td data-l="Added">${esc(a.created_at?fmtD(new Date(a.created_at),{month:'short',day:'numeric',year:'numeric'}):'—')}</td>
+      <td data-l="Date">${esc(a.created_at?fmtD(new Date(a.created_at),{month:'short',day:'numeric',year:'numeric'}):'—')}</td>
       <td class="act"><button class="icon-btn danger" type="button" data-accdel="${esc(a.id)}" aria-label="Remove ${esc(a.full_name)}">${ICON_DEL}</button></td>
     </tr>`).join('')+'</tbody>';
   $('#accT').innerHTML=body;
@@ -375,6 +479,7 @@ async function loadAccounts(){
     const d=await api('/api/admin/employees');
     accounts=d.employees||[];accLoaded=true;accErr='';
   }catch(e){
+    if(e.status===401){lockAccounts();return}
     accErr=(e.message||'Could not load employees.')+' Open this tab again to retry.';
   }
   drawAccounts();
@@ -414,15 +519,26 @@ $('#accForm').addEventListener('submit',async e=>{
     toast('Employee account added');
     await loadAccounts();
   }catch(err){
+    if(err.status===401){lockAccounts();return}
     $('#accErr').textContent=err.message||'Could not add the employee.';
   }finally{btn.disabled=false}
 });
 
+const fmtAdded=v=>v?fmtD(new Date(v),{month:'short',day:'numeric',year:'numeric'}):'—';
+function fillAccDel(a){
+  const set=(id,text)=>{const el=$(id);el.textContent=text;el.title=text};
+  set('#accDelName',a.full_name);
+  set('#accDelNameV',a.full_name);
+  set('#accDelEmail',a.email);
+  set('#accDelAdded',fmtAdded(a.created_at));
+}
 $('#accT').addEventListener('click',e=>{
   const b=e.target.closest('[data-accdel]');if(!b)return;
   accDeleting=accounts.find(a=>String(a.id)===b.dataset.accdel);if(!accDeleting)return;
-  $('#accDelTxt').textContent=`“${accDeleting.full_name}” (${accDeleting.email}) will no longer be able to log in.`;
+  fillAccDel(accDeleting);
   accDelDlg.showModal();
+  $('#accDelCancel').focus();
+  requestAnimationFrame(()=>$('#accDelCancel').focus());
 });
 $('#accDelCancel').addEventListener('click',()=>accDelDlg.close());
 $('#accDelOk').addEventListener('click',async()=>{
@@ -434,6 +550,7 @@ $('#accDelOk').addEventListener('click',async()=>{
     await api('/api/admin/employees/'+encodeURIComponent(id),{method:'DELETE'});
     toast('Account removed');
   }catch(err){
+    if(err.status===401){lockAccounts();return}
     toast(err.message||'Could not remove the account');
   }
   await loadAccounts();

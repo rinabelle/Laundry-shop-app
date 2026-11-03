@@ -100,6 +100,7 @@
 
       <div class="stats" id="stats"></div>
 
+      <div class="sales-row">
       <div class="card">
         <div class="card-h">
           <div class="card-t">
@@ -116,6 +117,41 @@
         </div>
         <div id="chart"></div>
         <div class="rule"><span class="tick" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span id="ruleTxt"></span></div>
+      </div>
+
+      <div class="card break-card" aria-labelledby="brkTitle">
+        <div class="card-h">
+          <div class="card-t">
+            <span class="ico teal"><svg class="ic"><use href="#i-coins"/></svg></span>
+            <div>
+              <h2 id="brkTitle">Service breakdown</h2>
+              <div class="readout">Revenue and orders per service</div>
+            </div>
+          </div>
+        </div>
+        <div class="brk" id="brk"></div>
+        <div class="brk-note" id="brkNote"></div>
+      </div>
+      </div>
+
+      <div class="card stuck-card" aria-labelledby="stuckTitle">
+        <div class="card-h">
+          <div class="card-t">
+            <span class="ico teal"><svg class="ic"><use href="#i-clip"/></svg></span>
+            <div>
+              <h2 id="stuckTitle">Stuck order alerts</h2>
+              <div class="readout" id="stuckSub"></div>
+            </div>
+          </div>
+          <button id="stuckToggle" class="btn" type="button" hidden>Show all</button>
+        </div>
+        <div class="scroll" id="stuckWrap">
+          <table class="cards stuck-table">
+            <thead><tr><th>Customer</th><th>Service</th><th class="num">Price</th><th>Status</th><th>Waiting</th></tr></thead>
+            <tbody id="stuckBody"></tbody>
+          </table>
+        </div>
+        <div class="stuck-empty" id="stuckEmpty" hidden></div>
       </div>
     </section>
 
@@ -161,6 +197,14 @@
           <option value="notyet">Not yet picked up</option>
           <option value="cancelled">Cancelled</option>
         </select>
+        <label class="datebox compact">
+          <span class="ico sm"><svg class="ic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M16 2v3"/><path d="M3 9h18"/><path d="M8 2v3"/><path d="M17 13h-6"/><path d="M13 17H7"/><path d="M7 13h.01"/><path d="M17 17h.01"/></svg></span>
+          <span class="date-t">
+            <span class="date-lbl">Report date</span>
+            <input type="date" id="hdate">
+          </span>
+          <svg class="ic chev"><use href="#i-chev"/></svg>
+        </label>
       </div>
       <div class="card">
         <div class="scroll"><table class="cards" id="histT"></table></div>
@@ -264,13 +308,41 @@
 </dialog>
 
 
-<dialog id="accDelDlg">
-  <h2>Remove account?</h2>
-  <p class="sub" id="accDelTxt"></p>
-  <div class="row-btns">
-    <button class="btn" type="button" id="accDelCancel">Cancel</button>
-    <button class="btn danger" type="button" id="accDelOk">Remove</button>
+<dialog id="accDelDlg" class="del-dlg" aria-labelledby="accDelTitle" aria-describedby="accDelSub">
+  <div class="del-ico" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ic lucide lucide-triangle-alert"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
   </div>
+  <h2 id="accDelTitle">Remove <span id="accDelName"></span>?</h2>
+  <p class="sub" id="accDelSub">They will no longer be able to log in.</p>
+
+  <dl class="del-info">
+    <div><dt>Name</dt><dd id="accDelNameV"></dd></div>
+    <div><dt>Email</dt><dd id="accDelEmail"></dd></div>
+    <div><dt>Date</dt><dd id="accDelAdded"></dd></div>
+  </dl>
+
+  <p class="del-warn">This can't be undone.</p>
+
+  <div class="row-btns center">
+    <button class="btn" type="button" id="accDelCancel" autofocus>Cancel</button>
+    <button class="btn danger-solid" type="button" id="accDelOk">Remove account</button>
+  </div>
+</dialog>
+
+
+<dialog id="keyDlg">
+  <h2>Admin key required</h2>
+  <p class="sub">Enter the admin key to manage employee accounts:</p>
+  <form id="keyForm" method="dialog" novalidate>
+    <label class="field">Admin key
+      <input id="kInput" type="password" autocomplete="off" required>
+    </label>
+    <div class="err" id="keyErr" role="alert"></div>
+    <div class="row-btns center">
+      <button class="btn" type="button" id="keyCancel">Cancel</button>
+      <button class="btn primary" type="submit">Continue</button>
+    </div>
+  </form>
 </dialog>
 
 
