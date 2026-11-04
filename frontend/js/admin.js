@@ -8,57 +8,29 @@ const pad=n=>String(n).padStart(2,'0');
 
 
 const UNITS=['per kilo','per piece'];
-const services=[
-  {id:1,name:'Wash and fold',       unit:'per kilo', price:65, active:true},
-  {id:2,name:'Wash, dry and fold',  unit:'per kilo', price:85, active:true},
-  {id:3,name:'Dry cleaning (suit)', unit:'per piece',price:350,active:true},
-  {id:4,name:'Comforter / bedsheet',unit:'per piece',price:250,active:true},
-  {id:5,name:'Ironing only',        unit:'per kilo', price:50, active:false}
-];
-let nextSvcId=6;
+let services=[];
+let svcErr='Loading services…';
 
 
-function rng(seed){return()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296}
-const R=rng(20261008);
-const NAMES=['Delo Santos','R. Bandala','A. Reyes','A. Jerez','C. Cayton','M. Dela Cruz','L. Garcia','K. Mendoza','J. Ramos','P. Santos','E. Villanueva','B. Aquino','T. Flores','D. Castillo','N. Torres','S. Lim','G. Pascual','H. Ocampo'];
-const now=new Date();
 const startOfDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
-const today0=startOfDay(now);
-const orders=[];
-for(let i=0;i<260;i++){
-  const daysAgo=Math.floor(Math.pow(R(),1.1)*100);
-  const created=new Date(today0.getTime()-daysAgo*DAY+(7+R()*13)*36e5);
-  const sv=services[Math.floor(R()*4)];                                   
-  const qty=sv.unit==='per kilo'?Math.round((2+R()*8)*2)/2:1+Math.floor(R()*3);   
-  
-  const o={name:NAMES[Math.floor(R()*NAMES.length)],svc:sv.name,price:Math.round(sv.price*qty),created,status:'Completed',completed:null};
-  const r=R();
-  if(daysAgo>=1){
-    o.status=r<.94?'Completed':'Cancelled';
-    if(o.status==='Completed')o.completed=new Date(created.getTime()+(4+R()*20)*36e5);
-  }else{
-    o.status=['Received','Washing','Folding','Ready for pickup','Completed','Completed'][Math.floor(R()*6)];
-    if(o.status==='Completed')o.completed=new Date(Math.min(now.getTime(),created.getTime()+(1+R()*6)*36e5));
-  }
-  if(o.completed&&o.completed>now)o.completed=new Date(now.getTime()-R()*36e5);
-  if(o.created>now)o.created=new Date(now.getTime()-R()*36e5*3);
-  orders.push(o);
-}
+const today0=startOfDay(new Date());
 
-[[3,'Ready for pickup'],[3,'Washing'],[4,'Folding'],[6,'Ready for pickup']].forEach(([daysAgo,status])=>{
-  const sv=services[Math.floor(R()*4)];
-  const qty=sv.unit==='per kilo'?Math.round((2+R()*8)*2)/2:1+Math.floor(R()*3);
-  orders.push({name:NAMES[Math.floor(R()*NAMES.length)],svc:sv.name,price:Math.round(sv.price*qty),
-    created:new Date(today0.getTime()-daysAgo*DAY+(8+R()*10)*36e5),status,completed:null});
+// Orders come from the server (/api/admin/orders). Shape used by the views below:
+// pendingAt = when the order was added, confirmedAt, completed, plus who did each step.
+let orders=[];
+let ordersErr='Loading orders…';
+const toDate=v=>v?new Date(v):null;
+const mapOrder=a=>({
+  id:a.order_code,name:a.customer_name,svc:a.service,price:a.price,status:a.status,
+  created:new Date(a.pending_at),pendingAt:new Date(a.pending_at),
+  confirmedAt:toDate(a.confirmed_at),completed:toDate(a.completed_at),
+  addedBy:a.added_by,confirmedBy:a.confirmed_by,completedBy:a.completed_by
 });
-orders.sort((a,b)=>a.created-b.created).forEach((o,i)=>o.id='LDR-'+String(i+1).padStart(4,'0'));
-orders.reverse();   
-
 
 function getCompletedOrders(start,end){
   return orders.filter(o=>o.status==='Completed'&&o.completed&&o.completed>=start&&o.completed<end);
 }
-const inProgress=()=>orders.filter(o=>['Received','Washing','Folding','Ready for pickup'].includes(o.status)).length;
+const inProgress=()=>orders.filter(o=>o.status==='Pending'||o.status==='Confirmed').length;
 
 
 const fmtD=(d,o)=>d.toLocaleDateString('en-PH',o);
@@ -110,6 +82,8 @@ function showView(v){
   syncPills();
   window.scrollTo(0,0);
   ({sales:renderSales,services:renderServices,history:renderHistory,accounts:renderAccounts})[v]();
+  if(v==='sales'||v==='history')refreshOrders();
+  if(v==='services')refreshServices();
 }
 $('#tabSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -172,7 +146,7 @@ function renderSales(){
   const vals=metric==='earnings'?earnV:cntV;
   const fmtV=v=>metric==='earnings'?peso(v):v+(v===1?' order':' orders');
 
-  $('#readout').textContent=list.length?'Hover or tap a bar for details':'No completed orders in this range.';
+  $('#readout').textContent=list.length?'Hover or tap a bar for details':(ordersErr||'No completed orders in this range.');
   const W=960,H=280,pl=56,pb=30,pt=24,{top,step:yStep}=chartAxis(metric,type,Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
@@ -198,7 +172,7 @@ function renderSales(){
     r.addEventListener('mouseenter',show);r.addEventListener('focus',show);r.addEventListener('click',show);
   });
   const ip=inProgress();
-  $('#ruleTxt').textContent=`Only orders marked Completed (picked up) are counted. ${ip} order${ip===1?' is':'s are'} still in progress and not included.`;
+  $('#ruleTxt').textContent=`Only orders marked Completed are counted. ${ip} order${ip===1?' is':'s are'} still open (Pending or Confirmed) and not included.`;
   renderBreakdown(list,earn);
   renderStuck();
 }
@@ -236,7 +210,7 @@ function renderStuck(){
       <td data-l="Customer"><b>${esc(o.name)}</b></td>
       <td data-l="Service">${esc(o.svc)}</td>
       <td data-l="Price" class="num"><b>${peso(o.price)}</b></td>
-      <td data-l="Status"><span class="badge ${o.status==='Ready for pickup'?'b-ready':'b-pending'}">${esc(o.status)}</span></td>
+      <td data-l="Status"><span class="badge ${o.status==='Confirmed'?'b-ready':'b-pending'}">${esc(o.status)}</span></td>
       <td data-l="Waiting"><span class="badge ${days>=4?'d-late':'d-warn'}">${days} day${days===1?'':'s'}</span></td></tr>`;
   }).join('');
   $('#stuckWrap').hidden=!n;
@@ -278,9 +252,9 @@ function renderServices(){
           <button class="icon-btn" type="button" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">${ICON_EDIT}</button>
           <button class="icon-btn danger" type="button" data-del="${s.id}" aria-label="Remove ${esc(s.name)}">${ICON_DEL}</button>
         </td></tr>`).join('')+'</tbody>'
-    :'<tbody><tr><td class="empty">No services yet. Click “+ Add service”.</td></tr></tbody>';
+    :`<tbody><tr><td class="empty">${svcErr?esc(svcErr):'No services yet. Click “+ Add service”.'}</td></tr></tbody>`;
   const n=services.length;
-  $('#svcCount').textContent=`${n} service${n===1?'':'s'}`;
+  $('#svcCount').textContent=svcErr?'':`${n} service${n===1?'':'s'}`;
 }
 
 
@@ -298,7 +272,7 @@ function openSvc(s){
 }
 $('#addSvc').addEventListener('click',()=>openSvc(null));
 $('#svcCancel').addEventListener('click',()=>svcDlg.close());
-$('#svcForm').addEventListener('submit',e=>{
+$('#svcForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const name=$('#sName').value.trim().replace(/\s+/g,' ');
   const unit=$('#sUnit').value,price=Number($('#sPrice').value),active=$('#sStatus').value==='active';
@@ -308,10 +282,18 @@ $('#svcForm').addEventListener('submit',e=>{
   else if(!UNITS.includes(unit))m='Choose a valid unit.';
   else if(!Number.isFinite(price)||price<=0||price>100000)m='Price must be a number above 0 (max ₱100,000).';
   if(m){$('#svcErr').textContent=m;return}
-  const price2=Math.round(price*100)/100;
-  if(editingSvc){Object.assign(editingSvc,{name,unit,price:price2,active});toast('Service updated')}
-  else{services.push({id:nextSvcId++,name,unit,price:price2,active});toast('Service added')}
-  svcDlg.close();renderServices();
+  const btn=$('#svcForm button[type="submit"]');
+  btn.disabled=true;$('#svcErr').textContent='';
+  try{
+    const body=JSON.stringify({name,unit,price:Math.round(price*100)/100,active});
+    if(editingSvc){await api('/api/admin/services/'+encodeURIComponent(editingSvc.id),{method:'PUT',body});toast('Service updated')}
+    else{await api('/api/admin/services',{method:'POST',body});toast('Service added')}
+    svcDlg.close();
+    await refreshServices();
+  }catch(err){
+    if(err.status===401){svcDlg.close();keyThen='orders';openKeyDlg('That admin key was not accepted. Please enter it again.');return}
+    $('#svcErr').textContent=err.message||'Could not save the service.';
+  }finally{btn.disabled=false}
 });
 
 
@@ -327,12 +309,19 @@ $('#svcT').addEventListener('click',e=>{
   }
 });
 $('#delCancel').addEventListener('click',()=>delDlg.close());
-$('#delOk').addEventListener('click',()=>{
-  const i=services.indexOf(deleting);
-  if(i>-1){services.splice(i,1);toast('Service removed')}
-  deleting=null;delDlg.close();renderServices();
+$('#delOk').addEventListener('click',async()=>{
+  const target=deleting;
+  deleting=null;delDlg.close();
+  if(!target)return;
+  try{
+    await api('/api/admin/services/'+encodeURIComponent(target.id),{method:'DELETE'});
+    toast('Service removed');
+  }catch(err){
+    if(err.status===401){keyThen='orders';openKeyDlg('That admin key was not accepted. Please enter it again.');return}
+    toast(err.message||'Could not remove the service');
+  }
+  await refreshServices();
 });
-
 
 const PAGE=10;
 let hPage=1;
@@ -348,10 +337,17 @@ function histFiltered(){
     return true;
   });
 }
-function pickupCell(o){
-  if(o.status==='Completed')return `<span class="chip done">Picked up</span><small>${esc(fmtD(o.completed,{month:'short',day:'numeric'}))}</small>`;
+const fmtT=d=>d.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+const who=(label,name)=>`<small class="who">${label} <b>${esc(name)}</b></small>`;
+function pendingCell(o){return `<span class="tl">${esc(fmtT(o.pendingAt))}${who('Added by',o.addedBy)}</span>`}
+function confirmedCell(o){
+  if(o.status==='Cancelled')return '<span class="muted-t">—</span>';
+  return o.confirmedAt?esc(fmtT(o.confirmedAt)):'<span class="chip wait">Waiting</span>';
+}
+function completedCell(o){
+  if(o.status==='Completed')return `<span class="tl">${esc(fmtT(o.completed))}${who('Marked complete by',o.completedBy)}</span>`;
   if(o.status==='Cancelled')return '<span class="chip cancelled">Cancelled</span>';
-  return `<span class="chip wait">Not yet</span><small>${esc(o.status)}</small>`;
+  return `<span class="tl"><span class="chip wait">Not yet</span><small class="who">${esc(o.status)}</small></span>`;
 }
 function pageList(cur,last){
   if(last<=7)return Array.from({length:last},(_,i)=>i+1);
@@ -365,14 +361,15 @@ function renderHistory(){
   hPage=Math.min(Math.max(hPage,1),pages);
   const from=(hPage-1)*PAGE,shown=f.slice(from,from+PAGE);
   $('#histT').innerHTML=shown.length
-    ?`<thead><tr><th>Name</th><th>Service</th><th class="num">Price</th><th>Date</th><th>Picked up</th></tr></thead><tbody>`+
+    ?`<thead><tr><th>Name</th><th>Service</th><th class="num">Price</th><th>Pending</th><th>Confirmed</th><th>Completed</th></tr></thead><tbody>`+
       shown.map(o=>`<tr>
         <td data-l="Name"><b>${esc(o.name)}</b></td>
         <td data-l="Service">${esc(o.svc)}</td>
         <td data-l="Price" class="num"><b>${peso(o.price)}</b></td>
-        <td data-l="Date">${esc(fmtDT(o.created))}</td>
-        <td data-l="Picked up?">${pickupCell(o)}</td></tr>`).join('')+'</tbody>'
-    :`<tbody><tr><td class="empty">${$('#hdate').value?'No orders on this date.':'No orders match your search.'}</td></tr></tbody>`;
+        <td data-l="Pending">${pendingCell(o)}</td>
+        <td data-l="Confirmed">${confirmedCell(o)}</td>
+        <td data-l="Completed">${completedCell(o)}</td></tr>`).join('')+'</tbody>'
+    :`<tbody><tr><td class="empty">${ordersErr?esc(ordersErr):($('#hdate').value?'No orders on this date.':(orders.length?'No orders match your search.':'No orders yet.'))}</td></tr></tbody>`;
   const info=f.length?`Showing ${from+1}–${from+shown.length} of ${f.length}`:'0 orders';
   const nav=pages>1
     ?`<nav class="pg-nav" aria-label="History pages">
@@ -429,13 +426,14 @@ function openKeyDlg(msg){
   $('#keyErr').textContent=msg||'';
   keyDlg.showModal();$('#kInput').focus();
 }
+let keyThen='accounts';
 function gateAccounts(){
   if(sessionStorage.getItem(KEY_NAME))showView('accounts');
-  else openKeyDlg();
+  else{keyThen='accounts';openKeyDlg()}
 }
 function lockAccounts(){
   accDlg.close();accDelDlg.close();
-  accounts=[];accLoaded=false;
+  accounts=[];accLoaded=false;keyThen='accounts';
   showView(prevView);
   openKeyDlg('That admin key was not accepted. Please enter it again.');
 }
@@ -450,12 +448,54 @@ $('#keyForm').addEventListener('submit',async e=>{
     const d=await api('/api/admin/employees',{},key);
     accounts=d.employees||[];accLoaded=true;accErr='';
     keyDlg.close();
-    showView('accounts');
+    if(keyThen==='accounts')showView('accounts');
+    else{await refreshOrders();if(view==='services')await refreshServices()}
   }catch(err){
     $('#keyErr').textContent=err.message||'Could not verify the admin key.';
     $('#kInput').select();
   }finally{btn.disabled=false}
 });
+
+let svcBusy=false;
+async function refreshServices(){
+  if(svcBusy)return;
+  if(!sessionStorage.getItem(KEY_NAME)){
+    svcErr='Enter the admin key to load services. Open the Accounts tab and enter the key, or refresh this page.';
+    if(view==='services')renderServices();
+    return;
+  }
+  svcBusy=true;
+  try{
+    const d=await api('/api/admin/services');
+    services=d.services||[];svcErr='';
+  }catch(e){
+    if(e.status===401){
+      services=[];svcErr='Enter the admin key to load services.';
+      keyThen='orders';openKeyDlg('That admin key was not accepted. Please enter it again.');
+    }else svcErr=e.message||'Could not load services.';
+  }finally{svcBusy=false}
+  if(view==='services')renderServices();
+}
+
+let ordersBusy=false;
+async function refreshOrders(){
+  if(ordersBusy)return;
+  if(!sessionStorage.getItem(KEY_NAME)){
+    ordersErr='Enter the admin key to load orders. Open the Accounts tab and enter the key, or refresh this page.';
+    return;
+  }
+  ordersBusy=true;
+  try{
+    const d=await api('/api/admin/orders');
+    orders=(d.orders||[]).map(mapOrder);ordersErr='';
+  }catch(e){
+    if(e.status===401){
+      orders=[];ordersErr='Enter the admin key to load orders.';
+      keyThen='orders';openKeyDlg('That admin key was not accepted. Please enter it again.');
+    }else ordersErr=(e.message||'Could not load orders.');
+  }finally{ordersBusy=false}
+  if(view==='sales')renderSales();else if(view==='history')renderHistory();
+}
 
 function drawAccounts(){
   let body;
@@ -557,6 +597,7 @@ $('#accDelOk').addEventListener('click',async()=>{
 });
 
 showView('sales');
+if(!sessionStorage.getItem(KEY_NAME)){keyThen='orders';openKeyDlg('Enter the admin key to load orders.')}
 
 const runBars = () =>
   $$('#chart .bar-r').forEach((r, i) => (r.style.animationDelay = i * 70 + 'ms'));
