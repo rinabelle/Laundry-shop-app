@@ -1,7 +1,7 @@
-POST https://laundry-shop-app-9i58.onrender.com/api/employee/login
+POST https://laundry-shop-app-9i58.onrender.com/api/verify-otp
 Content-Type: application/json
 
 {
-  "email": "test@laundry.com",
-  "password": "securepassword123"
+  "email": "your-test-customer@gmail.com",
+  "code": "123456"
 }
