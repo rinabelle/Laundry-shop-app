@@ -23,6 +23,7 @@
         <nav class="navigation">
             <a href="#records" class="active">Customer Records</a>
             <a href="admin.html">Admin</a>
+            <button type="button" class="logout-btn" id="employeeLogout">Log out</button>
         </nav>
     </header>
 
@@ -32,7 +33,10 @@
                 <h2>Employee Dashboard</h2>
                 <p>Manage customer information and laundry orders.</p>
             </div>
-            <button type="button" class="add-btn" onclick="openForm()">+ Add New Order</button>
+            <div class="welcome-actions">
+                <button type="button" class="secondary-btn" id="shopSettingsOpen">Shop settings</button>
+                <button type="button" class="add-btn" onclick="openForm()">+ Add New Order</button>
+            </div>
         </section>
 
         <section class="records-panel glass" id="records">
@@ -52,9 +56,6 @@
                     <label>Service
                         <select id="serviceFilter">
                             <option value="">All services</option>
-                            <option>Wash</option>
-                            <option>Wash and Dry</option>
-                            <option>Full Service</option>
                         </select>
                     </label>
                     <label>Sort by
@@ -78,15 +79,30 @@
                             <th>Customer Name</th>
                             <th>Contact Number</th>
                             <th>Service</th>
-                            <th>Weight (kg)</th>
+                            <th>Quantity</th>
                             <th>Price</th>
                             <th>Basket No.</th>
+                            <th>Schedule / Handoff</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="customerTable"></tbody>
                 </table>
+            </div>
+            <div class="pagination" id="orderPagination" aria-label="Order table pagination">
+                <label for="pageSize">Rows per page
+                    <select id="pageSize">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </label>
+                <span id="pageInfo" aria-live="polite"></span>
+                <div class="pagination-actions">
+                    <button type="button" class="secondary-btn" id="previousPage">Previous</button>
+                    <button type="button" class="secondary-btn" id="nextPage">Next</button>
+                </div>
             </div>
         </section>
 
@@ -102,34 +118,31 @@
 
                 <form id="newOrderForm">
                     <div class="form-grid">
-                        <div class="form-group">
+                        <div class="form-group" id="orderCustomerNameGroup">
                             <label for="customerName">Customer Name</label>
-                            <input type="text" id="customerName" placeholder="Enter customer name" required>
+                            <input type="text" id="customerName" placeholder="Enter customer name" maxlength="60" autocomplete="name" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="orderContactGroup">
                             <label for="contact">Contact Number</label>
-                            <input type="tel" id="contact" placeholder="Enter contact number" required>
+                            <input type="tel" id="contact" placeholder="e.g. +63 912 345 6789" maxlength="18" inputmode="tel" autocomplete="tel" title="Enter a phone number with 10 to 13 digits." required>
                         </div>
                         <div class="form-group">
                             <label for="service">Laundry Service</label>
                             <select id="service" required>
                                 <option value="">Select service</option>
-                                <option value="Wash">Wash</option>
-                                <option value="Wash and Dry">Wash and Dry</option>
-                                <option value="Full Service">Full Service</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="kilo">Weight (kg)</label>
-                            <input type="number" id="kilo" min="0.1" step="0.1" placeholder="Enter laundry weight" required>
+                            <input type="number" id="kilo" min="0.1" max="1000" step="0.1" placeholder="Enter laundry weight" required>
                         </div>
                         <div class="form-group">
                             <label for="price">Price (₱)</label>
-                            <input type="number" id="price" min="0" step="0.01" placeholder="Enter total price" required>
+                            <input type="number" id="price" min="0" max="1000000" step="0.01" placeholder="Enter total price" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="orderBasketGroup">
                             <label for="basket">Basket Number</label>
-                            <input type="number" id="basket" min="1" placeholder="Enter basket number" required>
+                            <input type="number" id="basket" min="1" max="99999" step="1" placeholder="Enter basket number" required>
                         </div>
                     </div>
 
@@ -142,8 +155,60 @@
                 </form>
             </section>
         </div>
+
+        <div class="overlay" id="shopSettingsPanel" hidden>
+            <section class="form-panel glass" role="dialog" aria-modal="true" aria-labelledby="shopSettingsTitle">
+                <div class="form-heading">
+                    <div>
+                        <h3 id="shopSettingsTitle">Shop settings</h3>
+                        <p>Update the customer-facing contact details, FAQs, and today's open status.</p>
+                    </div>
+                    <button type="button" class="close-btn" id="shopSettingsClose" aria-label="Close settings">&times;</button>
+                </div>
+
+                <div class="shop-hours-control">
+                    <div>
+                        <strong id="shopSettingsStatus">Checking shop status...</strong>
+                        <p id="shopSettingsStatusDetail"></p>
+                    </div>
+                    <div class="shop-hours-actions">
+                        <button type="button" class="secondary-btn" id="shopOpenNow">Open now</button>
+                        <button type="button" class="secondary-btn danger-btn" id="shopCloseNow">Close now</button>
+                        <button type="button" class="link-btn" id="shopNormalHours">Follow normal hours</button>
+                    </div>
+                </div>
+
+                <form id="shopSettingsForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="shopPhoneInput">Contact phone</label>
+                            <input type="tel" id="shopPhoneInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="shopEmailInput">Contact email</label>
+                            <input type="email" id="shopEmailInput" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="shopAddressInput">Shop address</label>
+                            <input type="text" id="shopAddressInput" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="shopFaqInput">Frequently asked questions</label>
+                            <textarea id="shopFaqInput" rows="8" placeholder="Question | Answer" required></textarea>
+                            <small>Enter one question and answer per line, separated by |.</small>
+                        </div>
+                    </div>
+                    <p class="form-error" id="shopSettingsError" role="alert" hidden></p>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" id="shopSettingsCancel">Close</button>
+                        <button type="submit" class="save-btn">Save shop information</button>
+                    </div>
+                </form>
+            </section>
+        </div>
     </main>
 
+    <script src="js/config.js"></script>
     <script src="js/employee.js"></script>
 </body>
 </html>

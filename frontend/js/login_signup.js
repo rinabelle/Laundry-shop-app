@@ -6,6 +6,11 @@ function saveSession(role, name, email, remember) {
   sessionStorage.removeItem(SESSION_KEY);
   (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify({ role, name, email }));
 }
+function saveCustomerToken(token, remember) {
+  localStorage.removeItem('customerToken');
+  sessionStorage.removeItem('customerToken');
+  (remember ? localStorage : sessionStorage).setItem('customerToken', token);
+}
 function getSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)); }
   catch (e) { return null; }
@@ -15,8 +20,39 @@ function rememberEmail(email, remember) {
   else localStorage.removeItem(REMEMBER_EMAIL_KEY);
 }
 
+async function loadShopContact() {
+  try {
+    const response = await fetch(window.fnkApiUrl('/api/shop/settings'));
+    if (!response.ok) throw new Error('Could not load shop contact details.');
+    const shop = await response.json();
+    const address = document.getElementById('shopAddress');
+    const addressLink = document.getElementById('shopAddressLink');
+    const email = document.getElementById('shopEmail');
+    const emailLink = document.getElementById('shopEmailLink');
+    const phone = document.getElementById('shopPhone');
+    const phoneLink = document.getElementById('shopPhoneLink');
+    if (address && addressLink && shop.address) {
+      address.textContent = shop.address;
+      addressLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(shop.address);
+    }
+    if (email && emailLink && shop.contact_email) {
+      email.textContent = shop.contact_email;
+      emailLink.href = 'mailto:' + shop.contact_email;
+    }
+    if (phone && phoneLink && shop.contact_phone) {
+      phone.textContent = shop.contact_phone;
+      phoneLink.href = 'tel:' + shop.contact_phone.replace(/[^\d+]/g, '');
+    }
+  } catch (error) {
+    console.error('Could not load shop contact details:', error);
+  }
+}
+
+loadShopContact();
+
 const existingSession = getSession();
-if (existingSession && existingSession.role === 'customer') {
+if (existingSession && existingSession.role === 'customer' &&
+    (localStorage.getItem('customerToken') || sessionStorage.getItem('customerToken'))) {
   window.location.replace('Customer.html');
 }
 
@@ -74,17 +110,17 @@ if (customerLoginForm) {
     const password = document.getElementById('login-password').value.trim();
       
     try{
-      const response = await fetch('/api/customer/login', {
+      const response = await fetch(window.fnkApiUrl('/api/customer/login'), {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
       });
       const data = await response.json();
-      console.log("Server response:", data.error || data.message || data);
 
       if (response.ok) {
         const remember = document.getElementById('login-remember').checked;
         localStorage.setItem('customerName', data.customer.full_name);
+        saveCustomerToken(data.token, remember);
         saveSession('customer', data.customer.full_name, data.customer.email, remember);
         rememberEmail(email, remember);
         window.location.href = 'Customer.html';
@@ -107,19 +143,16 @@ if(employeeLoginForm) {
     const email = employeeLoginForm.querySelector('input[type="email"]').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    console.log("DEBUG Employee Login Payload:", { email, password });
-
     try{
-      const response = await fetch('/api/employee/login', {
+      const response = await fetch(window.fnkApiUrl('/api/employee/login'), {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({email, password})
       });
       const data = await response.json();
-      console.log("Server response:", data.error || data.message || data);
-
       if(response.ok) {
-        localStorage.setItem('employeeName', data.employee.full_name)
+        localStorage.setItem('employeeName', data.employee.full_name);
+        localStorage.setItem('employeeToken', data.token)
         window.location.href = 'employee.html';
       }else{
         alert(data.error);
@@ -142,17 +175,17 @@ if (customerSignForm) {
     const password = document.getElementById('signup-password').value.trim();
 
     try{
-      const response = await fetch('/api/customer/signup', {
+      const response = await fetch(window.fnkApiUrl('/api/customer/signup'), {
         method: 'POST',
         headers: { 'Content-Type':  'application/json'},
         body: JSON.stringify({full_name, email, password})
       });
       const data = await response.json();
-      console.log("Sending to server:", { full_name, email, password });
 
       if (response.ok) {
         const remember = document.getElementById('signup-remember').checked;
         localStorage.setItem('customerName', full_name);
+        saveCustomerToken(data.token, remember);
         saveSession('customer', full_name, email, remember);
         rememberEmail(email, remember);
         window.location.href = 'Customer.html';
@@ -180,7 +213,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('/api/customer/forgot-password', {
+              const response = await fetch(window.fnkApiUrl('/api/customer/forgot-password'), {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail })
@@ -240,7 +273,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('/api/verify-otp', {
+              const response = await fetch(window.fnkApiUrl('/api/verify-otp'), {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail, code: otpCode })
@@ -282,7 +315,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
           }
 
           try {
-              const response = await fetch('/api/reset-password', {
+              const response = await fetch(window.fnkApiUrl('/api/reset-password'), {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ email: userEmail, code: userCode, password: newPassword })
@@ -343,8 +376,6 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
 
   const SUPABASE_URL = 'https://mlwwwjmkogmdfvfovwib.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_w6VrT7DDLaXH29ZfwiPVoQ_JUhLrhTD';
-  const API_BASE = '';
-
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const googleButtons = document.querySelectorAll('.google-btn');
@@ -363,7 +394,7 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + window.location.pathname,
+          redirectTo: new URL('index.html', window.location.href).toString(),
           queryParams: { prompt: 'select_account' }
         }
       });
@@ -382,13 +413,14 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
   let handlingGoogleLogin = false;
 
   supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event !== 'SIGNED_IN' || !session || handlingGoogleLogin) return;
+    if (!['SIGNED_IN', 'INITIAL_SESSION'].includes(event) || !session || handlingGoogleLogin ||
+        session.user.app_metadata.provider !== 'google') return;
     handlingGoogleLogin = true;
     setGoogleLoading(true);
 
     setTimeout(async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/customer/google-login`, {
+        const response = await fetch(window.fnkApiUrl('/api/customer/google-login'), {
           method: 'POST',
           headers: { Authorization: `Bearer ${session.access_token}` }
         });
@@ -396,8 +428,9 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
 
         if (response.ok) {
           localStorage.setItem('customerName', data.customer.full_name);
+          saveCustomerToken(data.token, true);
           saveSession('customer', data.customer.full_name, data.customer.email, true);
-          window.location.href = 'Customer.html';
+          window.location.replace('Customer.html');
         } else {
           alert(data.error);
           await supabaseClient.auth.signOut();

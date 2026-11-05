@@ -37,9 +37,9 @@
     </div>
 
     <div class="user-card">
-      <span class="avatar">RC</span>
+      <span class="avatar">CU</span>
       <div class="user-info">
-      <p class="user-name">Rinabelle Cayton</p>
+        <p class="user-name">Customer</p>
         <p class="user-role">Customer</p>
       </div>
       <button class="logout" id="logoutBtn" type="button" aria-label="Log out" title="Log out">
@@ -52,7 +52,10 @@
     
     <section class="view" id="view-schedule" aria-labelledby="scheduleTitle" hidden>
       <h1 id="scheduleTitle">Schedule &amp; basket</h1>
-      <p class="subtitle">Pick a day, a time slot and your basket.</p>
+      <p class="subtitle">Pick a day, time slot and basket. The shop will assess your laundry at handoff.</p>
+      <div class="schedule-shop-status" id="scheduleShopStatus" role="status" aria-live="polite">
+        Checking shop hours...
+      </div>
 
       <div class="schedule-layout">
         <aside class="order-progress panel" id="orderProgress" aria-labelledby="progressTitle">
@@ -67,10 +70,9 @@
             </span>
           </div>
           <ol class="progress-steps" id="progressSteps" aria-label="Order stages">
-            <li class="progress-step" data-progress-step="0"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1.4 10H5.4L4 10Z"/><path d="m8 10 4-6 4 6M9 14v3m6-3v3"/></svg></span><span class="progress-label">In queue</span></li>
-            <li class="progress-step" data-progress-step="1"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 8h18"/><circle cx="12" cy="14" r="4"/></svg></span><span class="progress-label">Processing</span></li>
-            <li class="progress-step" data-progress-step="2"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 4 6l2 5 3-1v10h10V10l3 1 2-5-3-2-4 3h-6L7 4Z"/><path d="M9 16h8"/></svg></span><span class="progress-label">Ready for pickup</span></li>
-            <li class="progress-step" data-progress-step="3"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><span class="progress-label">Completed</span></li>
+            <li class="progress-step" data-progress-step="0"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1.4 10H5.4L4 10Z"/><path d="m8 10 4-6 4 6M9 14v3m6-3v3"/></svg></span><span class="progress-label">Pending · awaiting handoff</span></li>
+            <li class="progress-step" data-progress-step="1"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 8h18"/><circle cx="12" cy="14" r="4"/></svg></span><span class="progress-label">Confirmed · being processed</span></li>
+            <li class="progress-step" data-progress-step="2"><span class="progress-marker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><span class="progress-label">Completed</span></li>
           </ol>
           <p class="progress-description" id="progressDescription"></p>
         </aside>
@@ -113,8 +115,10 @@
           <input class="search" id="search" type="search" placeholder="Search by order number or date" aria-label="Search orders">
           <div class="filters" role="group" aria-label="Filter orders">
             <button class="pill active" data-filter="all" type="button" aria-pressed="true">All</button>
-            <button class="pill" data-filter="completed" type="button" aria-pressed="false">Completed</button>
-            <button class="pill" data-filter="cancelled" type="button" aria-pressed="false">Cancelled</button>
+            <button class="pill" data-filter="Pending" type="button" aria-pressed="false">Pending</button>
+            <button class="pill" data-filter="Confirmed" type="button" aria-pressed="false">Confirmed</button>
+            <button class="pill" data-filter="Completed" type="button" aria-pressed="false">Completed</button>
+            <button class="pill" data-filter="Cancelled" type="button" aria-pressed="false">Cancelled</button>
           </div>
         </div>
         <ul class="orders" id="orders"></ul>
@@ -126,49 +130,12 @@
       <h1 id="pricesTitle">Price &amp; Services</h1>
       <p class="subtitle">Straightforward laundry care, priced by the kilogram or item.</p>
 
-      <div class="service-prices" aria-label="Laundry service prices">
-        <article class="service-price">
-          <div class="service-copy">
-            <span class="service-type">MOST POPULAR</span>
-            <h2>Wash &amp; Fold</h2>
-            <p>Washed, dried and neatly folded, ready to put away.</p>
-          </div>
-          <p class="service-rate"><strong>₱80</strong><span>/ kg</span></p>
-        </article>
-        <article class="service-price">
-          <div class="service-copy">
-            <span class="service-type">EVERYDAY CARE</span>
-            <h2>Wash, Dry &amp; Fold</h2>
-            <p>A complete clean and dry with a tidy fold for everyday wear.</p>
-          </div>
-          <p class="service-rate"><strong>₱100</strong><span>/ kg</span></p>
-        </article>
-        <article class="service-price">
-          <div class="service-copy">
-            <span class="service-type">PRESSED FINISH</span>
-            <h2>Wash, Dry &amp; Press</h2>
-            <p>Cleaned, dried and pressed for a crisp, ready-to-wear finish.</p>
-          </div>
-          <p class="service-rate"><strong>₱120</strong><span>/ kg</span></p>
-        </article>
+      <div class="service-prices" id="servicePrices" aria-label="Laundry service prices">
+        <p class="empty">Loading current services...</p>
       </div>
-
-      <section class="extras" aria-labelledby="extrasTitle">
-        <div class="extras-heading">
-          <div>
-            <p class="service-type">EXTRA CARE</p>
-            <h2 id="extrasTitle">Bulky items &amp; add-ons</h2>
-          </div>
-          <p>Special pieces are priced individually.</p>
-        </div>
-        <ul class="extras-list">
-          <li><span>Small comforter</span><strong>from ₱250</strong></li>
-          <li><span>Large comforter</span><strong>from ₱350</strong></li>
-          <li><span>Extra ironing</span><strong>from ₱20 / item</strong></li>
-        </ul>
       </section>
 
-      <p class="price-note">Prices are sample starting rates in Philippine pesos. A 3 kg minimum applies to per-kilogram services; final pricing may vary by fabric and item condition.</p>
+      <p class="price-note">Current services and rates are maintained by the shop. Your order total is calculated using the rate in effect when you schedule.</p>
     </section>
 
     <section class="view" id="view-settings" aria-labelledby="settingsTitle" hidden>
@@ -182,23 +149,23 @@
           <div class="settings-fields">
             <label class="field" for="customerName">
               <span>Full name</span>
-              <input id="customerName" name="name" type="text" autocomplete="name" required>
+              <input id="customerName" name="name" type="text" maxlength="100" autocomplete="name" required>
             </label>
             <label class="field" for="customerPhone">
               <span>Mobile number</span>
-              <input id="customerPhone" name="phone" type="tel" autocomplete="tel" required>
+              <input id="customerPhone" name="phone" type="tel" maxlength="18" inputmode="tel" autocomplete="tel" title="Enter a phone number with 10 to 13 digits." required>
             </label>
             <label class="field field-wide" for="customerEmail">
-              <span>Email address</span>
-              <input id="customerEmail" name="email" type="email" autocomplete="email">
+              <span>Account email address</span>
+              <input id="customerEmail" name="email" type="email" autocomplete="email" readonly>
             </label>
             <label class="field field-wide" for="customerAddress">
               <span>Pickup address</span>
-              <textarea id="customerAddress" name="address" rows="3" autocomplete="street-address" required></textarea>
+              <textarea id="customerAddress" name="address" rows="3" maxlength="500" autocomplete="street-address" required></textarea>
             </label>
             <label class="field field-wide" for="customerInstructions">
               <span>Pickup instructions <span class="field-optional">Optional</span></span>
-              <textarea id="customerInstructions" name="instructions" rows="2" placeholder="Landmark, gate code, or preferred handoff"></textarea>
+              <textarea id="customerInstructions" name="instructions" rows="2" maxlength="500" placeholder="Landmark, gate code, or preferred handoff"></textarea>
             </label>
           </div>
           <div class="settings-actions">
@@ -221,14 +188,14 @@
             <p class="service-type">WE'RE HERE TO HELP</p>
             <h2 id="contactOptionsTitle">Talk to our team</h2>
             <div class="contact-options">
-              <a class="contact-option" href="tel:+630000000000">
+              <a class="contact-option" id="shopPhoneLink" href="tel:+639694543370">
                 <span class="contact-symbol" aria-hidden="true">☎</span>
-                <span class="contact-copy"><strong>Call or text</strong><small>+63 969 454 3370</small></span>
+                <span class="contact-copy"><strong>Call or text</strong><small id="shopPhone"></small></span>
                 <span class="contact-arrow" aria-hidden="true">↗</span>
               </a>
-              <a class="contact-option" href="mailto:freshnklean@gmail.com">
+              <a class="contact-option" id="shopEmailLink" href="mailto:freshnklean@gmail.com">
                 <span class="contact-symbol" aria-hidden="true">@</span>
-                <span class="contact-copy"><strong>Send an email</strong><small>freshnklean@gmail.com</small></span>
+                <span class="contact-copy"><strong>Send an email</strong><small id="shopEmail"></small></span>
                 <span class="contact-arrow" aria-hidden="true">↗</span>
               </a>
             </div>
@@ -237,36 +204,15 @@
           <section class="support-section faq-section" aria-labelledby="faqTitle">
             <p class="service-type">QUICK ANSWERS</p>
             <h2 id="faqTitle">Frequently asked questions</h2>
-            <div class="faq-list">
-              <details class="faq-item">
-                <summary>How long does laundry service take?</summary>
-                <p>Standard wash, dry, and fold orders are usually ready within 24 to 48 hours. Timing may vary for bulky items or during busy periods.</p>
-              </details>
-              <details class="faq-item">
-                <summary>Can I request a pickup?</summary>
-                <p>Yes. Choose Pickup when scheduling, then check that your phone number and pickup address in Settings are up to date.</p>
-              </details>
-              <details class="faq-item">
-                <summary>Is there a minimum order?</summary>
-                <p>Per-kilogram services have a 3 kg minimum. Bulky pieces and add-on services are priced separately.</p>
-              </details>
-              <details class="faq-item">
-                <summary>How should I request special garment care?</summary>
-                <p>Add your care instructions when scheduling or contact the shop before your order so the team can confirm what is possible.</p>
-              </details>
-              <details class="faq-item">
-                <summary>Where can I check my order status?</summary>
-                <p>Open History in the sidebar to review your scheduled and past orders.</p>
-              </details>
-            </div>
+            <div class="faq-list" id="shopFaqs"></div>
           </section>
         </div>
 
         <aside class="shop-info" aria-labelledby="shopInfoTitle">
           <p class="service-type">VISIT US</p>
           <h2 id="shopInfoTitle">Fresh 'N Klean</h2>
-          <address>123 Sampaguita Street<br>Quezon City, Metro Manila</address>
-          <a class="directions-link" href="https://www.google.com/maps/search/?api=1&amp;query=123+Sampaguita+Street%2C+Quezon+City%2C+Metro+Manila" target="_blank" rel="noopener noreferrer">Get directions <span aria-hidden="true">↗</span></a>
+          <address id="shopAddress"></address>
+          <a class="directions-link" id="shopDirections" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Get directions <span aria-hidden="true">↗</span></a>
 
           <div class="hours-heading">
             <h3>Operating hours</h3>
@@ -315,6 +261,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/config.js"></script>
 <script src="js/Customer.js"></script>
 </body>
 </html>

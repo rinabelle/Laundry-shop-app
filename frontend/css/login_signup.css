@@ -233,6 +233,16 @@ body{
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.3;
 }
+.contact-link {
+  display: inline-block;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.contact-link:hover,
+.contact-link:focus-visible {
+  color: #8FE3D0;
+  text-decoration: underline;
+}
 .divider {
   width: 100%;
   height: 1px;

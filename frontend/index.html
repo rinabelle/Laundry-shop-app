@@ -6,6 +6,7 @@
   <title>Fresh 'N Klean - Authentication</title>
   <link rel="stylesheet" href="css/login_signup.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
   <script src="js/login_signup.js" defer></script>
 </head>
 
@@ -80,7 +81,9 @@
             </span>
             <div class="contact-details">
               <h3 class="contact-title">VISIT US</h3>
-              <address class="contact-text">123 Sampaguita Street Quezon City, <br> Metro Manila</address>
+              <a class="contact-text contact-link" id="shopAddressLink" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">
+                <span id="shopAddress">123 Sampaguita Street, Quezon City, Metro Manila</span>
+              </a>
             </div>
           </div>
 
@@ -93,7 +96,9 @@
             </span>
             <div class="contact-details">
               <h3 class="contact-title">EMAIL US</h3>
-              <p class="contact-text">freshnklean@gmail.com</p>
+              <a class="contact-text contact-link" id="shopEmailLink" href="mailto:freshnklean@gmail.com">
+                <span id="shopEmail">freshnklean@gmail.com</span>
+              </a>
             </div>         
           </div>
 
@@ -105,7 +110,9 @@
             </span>
             <div class="contact-details">
               <h3 class="contact-title">CALL OR TEXT</h3>
-              <p class="contact-text">+63 969 454 3370</p>
+              <a class="contact-text contact-link" id="shopPhoneLink" href="tel:+639694543370">
+                <span id="shopPhone">+63 969 454 3370</span>
+              </a>
             </div>
           </div>
         </div>
@@ -204,7 +211,7 @@
           <form id="signup-form">
             <div class="form-group">
               <label for="signup-fullname">Full Name</label>
-              <input type="full_name" id="signup-fullname" name="full_name" required autocomplete="name">
+              <input type="text" id="signup-fullname" name="full_name" maxlength="100" required autocomplete="name">
             </div>
 
             <div class="form-group">

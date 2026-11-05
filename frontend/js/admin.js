@@ -15,20 +15,18 @@ let svcErr='Loading services…';
 const startOfDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
 const today0=startOfDay(new Date());
 
-// Orders come from the server (/api/admin/orders). Shape used by the views below:
-// pendingAt = when the order was added, confirmedAt, completed, plus who did each step.
 let orders=[];
 let ordersErr='Loading orders…';
 const toDate=v=>v?new Date(v):null;
 const mapOrder=a=>({
-  id:a.order_code,name:a.customer_name,svc:a.service,price:a.price,status:a.status,
+  dbId:a.id,id:a.order_code,name:a.customer_name,svc:a.service,price:a.price,status:a.status,
   created:new Date(a.pending_at),pendingAt:new Date(a.pending_at),
   confirmedAt:toDate(a.confirmed_at),completed:toDate(a.completed_at),
   addedBy:a.added_by,confirmedBy:a.confirmed_by,completedBy:a.completed_by
 });
 
 function getCompletedOrders(start,end){
-  return orders.filter(o=>o.status==='Completed'&&o.completed&&o.completed>=start&&o.completed<end);
+  return orders.filter(o=>o.status!=='Cancelled'&&o.pendingAt>=start&&o.pendingAt<end);
 }
 const inProgress=()=>orders.filter(o=>o.status==='Pending'||o.status==='Confirmed').length;
 
@@ -97,7 +95,7 @@ const fromInput=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);return m?new Dat
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 function getRange(t,d){
   if(t==='daily')return{start:d,end:addDays(d,1)};
-  if(t==='weekly'){const s=addDays(d,-((d.getDay()+6)%7));return{start:s,end:addDays(s,7)}}   // Mon–Sun
+  if(t==='weekly'){const s=addDays(d,-((d.getDay()+6)%7));return{start:s,end:addDays(s,7)}} 
   const s=new Date(d.getFullYear(),d.getMonth(),1);return{start:s,end:new Date(d.getFullYear(),d.getMonth()+1,1)};
 }
 function niceMax(max){if(max<=0)return 4;const raw=max/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p*4}
@@ -133,23 +131,23 @@ function renderSales(){
 
   $('#stats').innerHTML=
     `<div class="card stat"><span class="ico teal"><svg class="ic"><use href="#i-coins"/></svg></span><div><div class="lbl">Total earnings</div><div class="val" data-to="${earn}" data-money="1">${peso(earn)}</div></div></div>
-     <div class="card stat violet"><span class="ico violet"><svg class="ic"><use href="#i-clip"/></svg></span><div><div class="lbl">Completed orders</div><div class="val" data-to="${list.length}">${list.length}</div></div></div>`;
+     <div class="card stat violet"><span class="ico violet"><svg class="ic"><use href="#i-clip"/></svg></span><div><div class="lbl">Orders</div><div class="val" data-to="${list.length}">${list.length}</div></div></div>`;
   if(animStats){$$('#stats .val').forEach(countUp);animStats=false}
 
   let n,lab,idx,showEvery;
-  if(type==='daily'){n=24;lab=i=>(i%12||12)+(i<12?'a':'p');idx=o=>o.completed.getHours();showEvery=3}
-  else if(type==='weekly'){n=7;lab=i=>fmtD(addDays(start,i),{weekday:'short'});idx=o=>Math.round((startOfDay(o.completed)-start)/DAY);showEvery=1}
-  else{n=Math.round((end-start)/DAY);lab=i=>String(i+1);idx=o=>o.completed.getDate()-1;showEvery=n>20?5:2}
+  if(type==='daily'){n=24;lab=i=>(i%12||12)+(i<12?'a':'p');idx=o=>o.pendingAt.getHours();showEvery=3}
+  else if(type==='weekly'){n=7;lab=i=>fmtD(addDays(start,i),{weekday:'short'});idx=o=>Math.round((startOfDay(o.pendingAt)-start)/DAY);showEvery=1}
+  else{n=Math.round((end-start)/DAY);lab=i=>String(i+1);idx=o=>o.pendingAt.getDate()-1;showEvery=n>20?5:2}
   const fullLab=i=>type==='daily'?`${lab(i)} – ${(((i+1)%12)||12)+((i+1)%24<12?'a':'p')}`:fmtD(addDays(start,i),{weekday:'short',month:'short',day:'numeric'});
   const earnV=Array(n).fill(0),cntV=Array(n).fill(0);
   list.forEach(o=>{const i=idx(o);earnV[i]+=o.price;cntV[i]++});
   const vals=metric==='earnings'?earnV:cntV;
   const fmtV=v=>metric==='earnings'?peso(v):v+(v===1?' order':' orders');
 
-  $('#readout').textContent=list.length?'Hover or tap a bar for details':(ordersErr||'No completed orders in this range.');
+  $('#readout').textContent=list.length?'Hover or tap a bar for details':(ordersErr||'No orders in this range.');
   const W=960,H=280,pl=56,pb=30,pt=24,{top,step:yStep}=chartAxis(metric,type,Math.max(...vals));
   const bw=(W-pl)/n,gap=Math.min(10,bw*.22);
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Completed orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${metric==='earnings'?'Earnings':'Orders'} chart, total ${esc(metric==='earnings'?peso(earn):list.length)}"><defs><linearGradient id="barG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58f3de"/><stop offset="1" stop-color="#12b3a3"/></linearGradient></defs>`;
   const lines=Math.round(top/yStep);
   for(let g=0;g<=lines;g++){const v=yStep*g,y=pt+(H-pt-pb)*(1-v/top);
     s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="rgba(200,205,255,${g?.18:.45})"${g?' stroke-dasharray="4 6"':''}/><text x="${pl-8}" y="${y+4}" text-anchor="end">${metric==='earnings'?'₱':''}${v>=1000?(v/1000)+'k':Math.round(v)}</text>`}
@@ -172,7 +170,7 @@ function renderSales(){
     r.addEventListener('mouseenter',show);r.addEventListener('focus',show);r.addEventListener('click',show);
   });
   const ip=inProgress();
-  $('#ruleTxt').textContent=`Only orders marked Completed are counted. ${ip} order${ip===1?' is':'s are'} still open (Pending or Confirmed) and not included.`;
+  $('#ruleTxt').textContent=`Earnings include every order that isn't cancelled, even if it's still Pending. ${ip} order${ip===1?' is':'s are'} still open (Pending or Confirmed).`;
   renderBreakdown(list,earn);
   renderStuck();
 }
@@ -183,7 +181,7 @@ function renderBreakdown(list,earn){
   list.forEach(o=>{const r=m.get(o.svc)||{name:o.svc,rev:0,n:0};r.rev+=o.price;r.n++;m.set(o.svc,r)});
   const rows=[...m.values()].sort((a,b)=>b.rev-a.rev);
   if(!rows.length){
-    $('#brk').innerHTML='<div class="brk-empty">No completed orders in this range.</div>';
+    $('#brk').innerHTML='<div class="brk-empty">No orders in this range.</div>';
     $('#brkNote').textContent='';
     return;
   }
@@ -210,7 +208,7 @@ function renderStuck(){
       <td data-l="Customer"><b>${esc(o.name)}</b></td>
       <td data-l="Service">${esc(o.svc)}</td>
       <td data-l="Price" class="num"><b>${peso(o.price)}</b></td>
-      <td data-l="Status"><span class="badge ${o.status==='Confirmed'?'b-ready':'b-pending'}">${esc(o.status)}</span></td>
+      <td data-l="Status"><select class="st-sel st-${o.status.toLowerCase()}" data-id="${o.dbId}" aria-label="Status for ${esc(o.name)}">${['Pending','Confirmed','Completed','Cancelled'].map(s=>`<option${s===o.status?' selected':''}>${s}</option>`).join('')}</select></td>
       <td data-l="Waiting"><span class="badge ${days>=4?'d-late':'d-warn'}">${days} day${days===1?'':'s'}</span></td></tr>`;
   }).join('');
   $('#stuckWrap').hidden=!n;
@@ -222,6 +220,19 @@ function renderStuck(){
   tg.textContent=stuckAll?'Show less':`Show all (${n})`;
 }
 $('#stuckToggle').addEventListener('click',()=>{stuckAll=!stuckAll;renderStuck()});
+$('#stuckBody').addEventListener('change',async e=>{
+  const sel=e.target.closest('.st-sel');if(!sel)return;
+  const status=sel.value;
+  if(status==='Cancelled'&&!confirm('Cancel this order? This can\'t be undone.')){renderStuck();return}
+  sel.disabled=true;
+  try{
+    await api(`/api/admin/orders/${sel.dataset.id}/status`,{method:'PATCH',body:JSON.stringify({status})});
+    toast(`Order marked ${status}`);
+  }catch(err){
+    toast(err.message||'Could not update the order.');
+  }
+  await refreshOrders();
+});
 
 $('#typeSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;type=b.dataset.t;
@@ -397,7 +408,7 @@ $('#outOk').addEventListener('click',()=>{
   outDlg.close();window.location.href=EMPLOYEE_PAGE;
 });
 
-const API='';
+const API=window.FNK_API_BASE||'';
 const KEY_NAME='fnk_admin_key';
 let accounts=[],accLoaded=false,accErr='',accDeleting=null;
 

@@ -345,6 +345,24 @@ h1 {
   color: var(--muted);
 }
 
+.schedule-shop-status {
+  width: fit-content;
+  margin: -14px 0 22px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--plum-tint);
+  color: var(--plum-700);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.schedule-shop-status.is-open {
+  border-color: rgba(43, 184, 160, 0.45);
+  background: rgba(43, 184, 160, 0.12);
+  color: var(--teal-dark);
+}
+
 .panel {
   padding: 30px;
   border: 1.5px solid var(--line);
@@ -516,6 +534,34 @@ h1 {
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 14px 34px rgba(142, 68, 158, 0.08);
+}
+
+.booking-service {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(150px, 0.7fr);
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.booking-service .field select,
+.booking-service .field input {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--plum-text);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.estimated-price {
+  grid-column: 1 / -1;
+  color: var(--teal-dark);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .pickup-details {
@@ -1251,6 +1297,26 @@ h1 {
   color: var(--teal-dark);
 }
 
+.status-pending {
+  background: #fff4d8;
+  color: #8b5b00;
+}
+
+.status-completed {
+  background: var(--mint);
+  color: var(--teal-dark);
+}
+
+.status-cancelled {
+  background: var(--rose);
+  color: var(--rose-text);
+}
+
+.status-confirmed {
+  background: #e8edff;
+  color: #3c55a0;
+}
+
 .status.cancelled {
   background: var(--rose);
   color: var(--rose-text);
@@ -1544,6 +1610,10 @@ dialog p {
     position: static;
   }
 
+  .booking-service {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .slots {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -1582,6 +1652,10 @@ dialog p {
 
   .toggle .pill {
     flex: 1;
+  }
+
+  .schedule-booking {
+    padding: 20px;
   }
 
   .days {

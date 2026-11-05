@@ -65,6 +65,12 @@ h1, h2, h3 { font-family: "Sora", sans-serif; letter-spacing: -.01em; }
 }
 .navigation a:hover { background: var(--glass-strong); }
 .navigation a.active { background: var(--glass-strong); color: var(--ink); box-shadow: inset 0 0 0 1px var(--glass-edge); }
+.logout-btn {
+    padding: 8px 16px; border: 1px solid var(--glass-edge); border-radius: 999px;
+    background: transparent; color: var(--ink-soft); font: inherit; cursor: pointer;
+    transition: background .2s, color .2s;
+}
+.logout-btn:hover { background: var(--glass-strong); color: var(--ink); }
 
 /* layout */
 .container { width: min(1200px, calc(100% - 28px)); margin: 0 auto; padding: 32px 0 60px; }
@@ -72,14 +78,18 @@ h1, h2, h3 { font-family: "Sora", sans-serif; letter-spacing: -.01em; }
 .welcome-section h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
 .welcome-section p { color: var(--ink-soft); margin-top: 4px; }
 
-.add-btn, .save-btn {
+.add-btn, .save-btn, .secondary-btn {
     border: 0; cursor: pointer; font: 600 .95rem "DM Sans", sans-serif; color: #fff;
     padding: 12px 22px; border-radius: 999px;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
     box-shadow: 0 8px 20px rgba(122, 90, 216, .35), inset 0 1px 0 rgba(255,255,255,.4);
     transition: transform .15s, box-shadow .15s;
 }
-.add-btn:hover, .save-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(122,90,216,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+.add-btn:hover, .save-btn:hover, .secondary-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(122,90,216,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+.secondary-btn { background: var(--glass-strong); border: 1px solid var(--glass-edge); }
+.secondary-btn:disabled { opacity: .55; cursor: default; }
+.welcome-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.danger-btn { color: #ffc2cc; background: rgba(194,59,78,.24); }
 
 /* records */
 .records-panel { border-radius: var(--radius); padding: 24px; }
@@ -118,7 +128,7 @@ input:focus, select:focus { border-color: var(--accent-2); box-shadow: 0 0 0 4px
 
 /* table */
 .table-wrap { overflow-x: auto; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid var(--glass-edge); }
-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+table { width: 100%; border-collapse: collapse; min-width: 1100px; }
 th, td { padding: 13px 16px; text-align: left; white-space: nowrap; }
 th { font-size: .82rem; font-weight: 600; color: var(--ink-soft); background: rgba(255,255,255,.08); }
 tbody tr { border-top: 1px solid rgba(255,255,255,.12); transition: background .15s; }
@@ -126,6 +136,16 @@ tbody tr:hover { background: rgba(255,255,255,.07); }
 td.id { font-family: "Sora", sans-serif; font-weight: 600; font-size: .88rem; }
 td.num { font-variant-numeric: tabular-nums; }
 .empty-message { text-align: center; color: var(--ink-soft); padding: 40px 16px; white-space: normal; }
+
+.pagination {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    flex-wrap: wrap; padding-top: 16px; color: var(--ink-soft); font-size: .88rem;
+}
+.pagination > label { display: flex; align-items: center; gap: 8px; }
+.pagination select { padding: 6px 10px; }
+.pagination-actions { display: flex; gap: 8px; }
+.pagination-actions .secondary-btn { padding: 7px 12px; font-size: .85rem; }
+.pagination-actions .secondary-btn:disabled { opacity: .5; cursor: default; transform: none; }
 
 .status-select { padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: .85rem; cursor: pointer; }
 .status-pending { background: rgba(245, 180, 70, .35); }
@@ -135,11 +155,14 @@ td.num { font-variant-numeric: tabular-nums; }
 
 .delete-btn { cursor: pointer; font: 600 .85rem "DM Sans", sans-serif; color: #ff8fa0; background: rgba(194,59,78,.18); border: 1px solid rgba(194,59,78,.3); border-radius: 999px; padding: 6px 14px; }
 .delete-btn:hover { background: rgba(194,59,78,.2); }
+.assess-btn { cursor: pointer; font: 600 .85rem "DM Sans", sans-serif; color: var(--ink); background: var(--glass-strong); border: 1px solid var(--glass-edge); border-radius: 999px; padding: 6px 14px; }
+.assess-btn:hover { background: rgba(255,255,255,.2); }
 
 /* form modal */
 .overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 16px; background: rgba(10, 5, 25, .6); backdrop-filter: blur(6px); overflow-y: auto; }
 .overlay[hidden] { display: none; }
 .form-panel { width: min(720px, 100%); border-radius: var(--radius); padding: 28px; background: rgba(40,24,90,.55); }
+.form-panel { max-height: calc(100vh - 32px); overflow-y: auto; }
 .form-heading { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 20px; }
 .form-heading h3 { font-size: 1.3rem; }
 .form-heading p { color: var(--ink-soft); font-size: .9rem; }
@@ -147,6 +170,15 @@ td.num { font-variant-numeric: tabular-nums; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .form-group { display: grid; gap: 6px; }
 .form-group label { font-weight: 600; font-size: .88rem; }
+.form-group textarea { width: 100%; min-height: 110px; padding: 10px 14px; border: 1px solid var(--glass-edge); border-radius: 14px; background: var(--glass-strong); color: var(--ink); font: inherit; resize: vertical; }
+.form-group small { color: var(--ink-soft); }
+.full-width { grid-column: 1 / -1; }
+.shop-hours-control { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; padding: 14px; border: 1px solid var(--glass-edge); border-radius: 16px; background: var(--glass); }
+.shop-hours-control p { margin-top: 4px; color: var(--ink-soft); font-size: .85rem; }
+.shop-hours-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.shop-hours-actions .secondary-btn { padding: 8px 13px; font-size: .85rem; }
+.shop-hours-actions .link-btn { color: #c5b5f6; }
+.shop-hours-control + form .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .form-error { margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: rgba(194,59,78,.15); border: 1px solid rgba(194,59,78,.35); color: #ffc2cc; font-weight: 500; }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .cancel-btn { cursor: pointer; font: 600 .95rem "DM Sans", sans-serif; color: var(--ink); padding: 12px 22px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-edge); }
@@ -154,6 +186,11 @@ td.num { font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
     .header { border-radius: 24px; }
     .form-grid { grid-template-columns: 1fr; }
+    .welcome-actions { width: 100%; }
+    .welcome-actions button { flex: 1; }
+    .shop-hours-control { align-items: start; flex-direction: column; }
+    .shop-hours-control + form .form-grid { grid-template-columns: 1fr; }
+    .full-width { grid-column: auto; }
     .records-panel { padding: 16px; }
     .filter-selects label, .filter-selects select { width: 100%; }
     .filter-selects { width: 100%; }
