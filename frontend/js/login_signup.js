@@ -324,8 +324,27 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
               const data = await response.json();
 
               if (response.ok) {
-                  alert('Password updated successfully! You can now log in.');
-                  window.location.reload(); 
+                  try {
+                      const loginRes = await fetch(window.fnkApiUrl('/api/customer/login'), {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: userEmail, password: newPassword })
+                      });
+                      const loginData = await loginRes.json();
+
+                      if (loginRes.ok) {
+                          localStorage.setItem('customerName', loginData.customer.full_name);
+                          saveCustomerToken(loginData.token, false);
+                          saveSession('customer', loginData.customer.full_name, loginData.customer.email, false);
+                          window.location.href = 'Customer.html';
+                          return;
+                      }
+                  } catch (err) {
+                      console.error('Auto log-in after reset failed:', err);
+                  }
+
+                  alert('Password updated successfully! Please log in.');
+                  window.location.reload();
               } else {
                   alert(data.error || 'Failed to update password.');
               }
