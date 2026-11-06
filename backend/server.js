@@ -9,7 +9,59 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 const app = express();
 app.disable('x-powered-by');
-app.use(cors());
+app.set('trust proxy', 1);
+
+const ALLOWED_ORIGINS = new Set([
+  ...String(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean),
+  process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : null,
+  ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000', 'http://127.0.0.1:3000'])
+].filter(Boolean));
+app.use(cors({
+  origin: (origin, cb) => cb(null, !origin || ALLOWED_ORIGINS.has(origin))
+}));
+
+
+const rlStore = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, e] of rlStore) if (e.reset <= now) rlStore.delete(k);
+}, 5 * 60 * 1000).unref();
+
+function rateLimit({ name, windowMs, max, key = req => req.ip, failuresOnly = false,
+                     isFailure = status => status >= 400 && status < 500 && status !== 429,
+                     message = 'Too many attempts. Please wait a few minutes and try again.' }) {
+  return (req, res, next) => {
+    const k = name + ':' + key(req);
+    const now = Date.now();
+    let entry = rlStore.get(k);
+    if (!entry || entry.reset <= now) {
+      entry = { count: 0, reset: now + windowMs };
+      rlStore.set(k, entry);
+    }
+    if (entry.count >= max) {
+      res.set('Retry-After', String(Math.max(1, Math.ceil((entry.reset - now) / 1000))));
+      return res.status(429).json({ error: message });
+    }
+    if (!failuresOnly) {
+      entry.count++;
+    } else {
+      res.on('finish', () => {
+        if (isFailure(res.statusCode)) entry.count++;
+        else if (res.statusCode < 400) rlStore.delete(k);
+      });
+    }
+    next();
+  };
+}
+const emailKey = req => String((req.body && req.body.email) || '').trim().toLowerCase().slice(0, 100);
+const MIN15 = 15 * 60 * 1000;
+const loginLimiter  = name => rateLimit({ name, windowMs: MIN15, max: 10, failuresOnly: true, key: req => req.ip + '|' + emailKey(req) });
+const signupLimiter = rateLimit({ name: 'signup', windowMs: 60 * 60 * 1000, max: 10 });
+const forgotByEmail = rateLimit({ name: 'forgot-email', windowMs: MIN15, max: 3, key: emailKey });
+const forgotByIp    = rateLimit({ name: 'forgot-ip', windowMs: MIN15, max: 10 });
+
+const otpByEmail    = rateLimit({ name: 'otp-email', windowMs: MIN15, max: 8, key: emailKey });
+const otpByIp       = rateLimit({ name: 'otp-ip', windowMs: MIN15, max: 40 });
 app.use((req, res, next) => {
   res.set('X-Content-Type-Options', 'nosniff');
   res.set('X-Frame-Options', 'DENY');
@@ -53,7 +105,7 @@ app.get('/', (req, res) => {
     res.send('Server is running and connected!');
 });
 
-app.post('/api/customer/signup', async (req, res) => {
+app.post('/api/customer/signup', signupLimiter, async (req, res) => {
   try{
       const { full_name, email, password } = req.body;
 
@@ -88,7 +140,7 @@ app.post('/api/customer/signup', async (req, res) => {
     }
 });
 
-app.post('/api/customer/login', async (req, res) => {
+app.post('/api/customer/login', loginLimiter('customer-login'), async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -128,7 +180,7 @@ app.post('/api/customer/login', async (req, res) => {
   }
 })
 
-app.post('/api/employee/login', async (req, res) => {  try {
+app.post('/api/employee/login', loginLimiter('employee-login'), async (req, res) => {  try {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -175,6 +227,11 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
+
+app.use('/api/admin', rateLimit({
+  name: 'admin-key', windowMs: MIN15, max: 10, failuresOnly: true,
+  isFailure: status => status === 401
+}));
 
 pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()')
   .catch(err => console.error('Could not ensure employees.created_at:', err.message));
@@ -240,7 +297,12 @@ app.delete('/api/admin/employees/:id', requireAdmin, async (req, res) => {
 });
 
 
-const TOKEN_SECRET = process.env.SESSION_SECRET || ADMIN_KEY || crypto.randomBytes(32).toString('hex');
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET is not set. Using a temporary random secret; set a long random SESSION_SECRET in your environment.');
+} else if (process.env.SESSION_SECRET.length < 32) {
+  console.warn('WARNING: SESSION_SECRET is short. Use at least 32 random characters.');
+}
+const TOKEN_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 function signToken(payload) {
@@ -733,9 +795,7 @@ app.post('/api/employee/orders', requireEmployee, async (req, res) => {
     await serviceSchemaReady;
     const customer_name = String(req.body.customer_name || '').trim().replace(/\s+/g, ' ');
     const contact = String(req.body.contact || '').trim();
-    const service = String(req.body.service || '').trim();
     const weight = Number(req.body.weight_kg);
-    const price = Number(req.body.price);
     const basket = Number(req.body.basket_no);
 
     if (customer_name.length < 2 || customer_name.length > 60) {
@@ -744,14 +804,8 @@ app.post('/api/employee/orders', requireEmployee, async (req, res) => {
     if (!isValidContactNumber(contact)) {
       return res.status(400).json({ error: 'Enter a contact number with 10 to 13 digits.' });
     }
-    if (!service || service.length > 60) {
-      return res.status(400).json({ error: 'Please choose a service.' });
-    }
     if (!Number.isFinite(weight) || weight <= 0 || weight > 1000) {
       return res.status(400).json({ error: 'Weight must be above 0 kg.' });
-    }
-    if (!Number.isFinite(price) || price < 0 || price > 1000000) {
-      return res.status(400).json({ error: 'Please enter a valid price.' });
     }
     if (!Number.isInteger(basket) || basket < 1 || basket > 99999) {
       return res.status(400).json({ error: 'Basket number must be a whole number of 1 or more.' });
@@ -765,15 +819,22 @@ app.post('/api/employee/orders', requireEmployee, async (req, res) => {
     }
 
     const notes = String(req.body.notes || '').trim().slice(0, 500) || null;
-    let service_id = null, unit = null, unit_price = null;
+   
     const sid = parseInt(req.body.service_id, 10);
-    if (Number.isInteger(sid)) {
-      const svc = await pool.query('SELECT id, unit, price FROM services WHERE id = $1', [sid]);
-      if (svc.rows.length) {
-        service_id = svc.rows[0].id; unit = svc.rows[0].unit; unit_price = svc.rows[0].price;
-      }
+    const svcResult = Number.isInteger(sid)
+      ? await pool.query('SELECT id, name, unit, price FROM services WHERE id = $1 AND active = TRUE', [sid])
+      : { rows: [] };
+    if (!svcResult.rows.length) {
+      return res.status(400).json({ error: 'Please choose an available service.' });
     }
+    const chosen = svcResult.rows[0];
+    const service = chosen.name;
+    const service_id = chosen.id, unit = chosen.unit, unit_price = chosen.price;
     const storedWeight = unit === 'per piece' ? Math.ceil(weight) : Math.round(weight * 10) / 10;
+    const price = Math.round(Number(unit_price) * storedWeight * 100) / 100;
+    if (!Number.isFinite(price) || price > 99999999.99) {
+      return res.status(400).json({ error: 'The order total is too high.' });
+    }
     const cust = await pool.query('SELECT id FROM customers WHERE phone = $1 LIMIT 1', [contact]);
     const customer_id = cust.rows.length ? cust.rows[0].id : null;
 
@@ -782,7 +843,7 @@ app.post('/api/employee/orders', requireEmployee, async (req, res) => {
                            customer_id, service_id, unit, unit_price, amount_paid, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0, $13)
        RETURNING ${ORDER_COLS}`,
-      [customer_name, contact, service, storedWeight, Math.round(price * 100) / 100,
+      [customer_name, contact, service, storedWeight, price,
        basket, String(req.employee.id), req.employee.full_name, customer_id, service_id, unit, unit_price, notes]
     );
     await logHistory(created.rows[0].id, 'created', req.employee,
@@ -1044,24 +1105,22 @@ app.delete('/api/admin/services/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/customer/forgot-password', async (req, res) => {
+app.post('/api/customer/forgot-password', forgotByIp, forgotByEmail, async (req, res) => {
+  const GENERIC = { message: 'If an account exists for that email, a reset code has been sent.' };
   try {
-    const { email } = req.body;
+    const email = String((req.body && req.body.email) || '').trim();
 
     if (!email) {
       return res.status(400).json({ error: 'Please provide your email address.' });
     }
 
-    const userResult = await pool.query('SELECT * FROM customers WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'No account found with this email.' });
+    const userResult = await pool.query('SELECT email, password_hash FROM customers WHERE email = $1', [email]);
+    const user = userResult.rows[0];
+    if (!user || !user.password_hash) {
+      return res.json(GENERIC);
     }
 
-    if (!userResult.rows[0].password_hash) {
-      return res.status(400).json({ error: 'This account uses Google sign-in. Please click "Continue with Google".' });
-    }
-
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await pool.query(
@@ -1071,12 +1130,13 @@ app.post('/api/customer/forgot-password', async (req, res) => {
       [otp, expiresAt, email]
     );
 
-   
-    if (!process.env.BREVO_API_KEY) {
-      throw new Error('BREVO_API_KEY is not set on the server.');
-    }
+    res.json(GENERIC);
 
-    const emailResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+    if (!process.env.BREVO_API_KEY) {
+      console.error('BREVO_API_KEY is not set on the server.');
+      return;
+    }
+    fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -1089,24 +1149,19 @@ app.post('/api/customer/forgot-password', async (req, res) => {
         subject: 'Password Reset OTP - Laundry App',
         textContent: `Hello,\n\nYour One-Time Password (OTP) to reset your password is: ${otp}\n\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`
       })
-    });
-
-    if (!emailResponse.ok) {
-      const detail = await emailResponse.text();
-      throw new Error(`Brevo API error ${emailResponse.status}: ${detail}`);
-    }
-
-    console.log(`OTP email successfully sent to ${email}`);
-
-    res.json({ message: 'OTP sent successfully to your email!' });
+    }).then(async emailResponse => {
+      if (!emailResponse.ok) {
+        console.error(`Brevo API error ${emailResponse.status}: ${await emailResponse.text()}`);
+      }
+    }).catch(err => console.error('Could not send reset email:', err.message));
 
   } catch (err) {
     console.error('Server error during forgot-password request:', err);
-    res.status(500).json({ error: 'Server error while sending reset email. Please try again later.' });
+    if (!res.headersSent) res.status(500).json({ error: 'Server error while sending reset email. Please try again later.' });
   }
 });
 
-app.post('/api/verify-otp', async (req, res) => {
+app.post('/api/verify-otp', otpByIp, otpByEmail, async (req, res) => {
   try {
     const { email, code } = req.body;
 
@@ -1139,7 +1194,7 @@ app.post('/api/verify-otp', async (req, res) => {
   }
 });
 
-  app.post('/api/reset-password', async (req, res) => {
+  app.post('/api/reset-password', otpByIp, otpByEmail, async (req, res) => {
     try {
       const { email, code, password } = req.body;
       if (!email || !code || !password) {

@@ -222,7 +222,7 @@ const sendCodeBtn = document.getElementById('sendCodeBtn');
               const data = await response.json();
 
               if (response.ok) {
-                  alert('Reset code sent to your email!');
+                  alert('If that email is registered, a reset code has been sent.');
                   document.getElementById('step-email').style.display = 'none';
                   document.getElementById('step-otp').style.display = 'block';
               } else {
