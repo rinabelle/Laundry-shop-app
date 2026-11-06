@@ -1,5 +1,6 @@
 /* Employee page - talks to the backend (Supabase database) instead of localStorage. */
 const TOKEN_KEY = "employeeToken";
+const PAGE_SIZE = 5; // orders shown per page
 const STATUSES = [
     { value: "Pending",   cls: "pending" },
     { value: "Confirmed", cls: "washing" },
@@ -15,7 +16,6 @@ const els = {
     chips: document.getElementById("statusChips"),
     count: document.getElementById("resultCount"),
     pagination: document.getElementById("orderPagination"),
-    pageSize: document.getElementById("pageSize"),
     pageInfo: document.getElementById("pageInfo"),
     previousPage: document.getElementById("previousPage"),
     nextPage: document.getElementById("nextPage"),
@@ -184,7 +184,7 @@ function renderChips() {
 
 function render() {
     const filteredRows = getFiltered();
-    const pageSize = Number(els.pageSize.value);
+    const pageSize = PAGE_SIZE;
     const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
     currentPage = Math.min(currentPage, pageCount);
     const start = (currentPage - 1) * pageSize;
@@ -239,7 +239,6 @@ function resetPageAndRender() {
 els.search.addEventListener("input", resetPageAndRender);
 els.service.addEventListener("change", resetPageAndRender);
 els.sort.addEventListener("change", resetPageAndRender);
-els.pageSize.addEventListener("change", resetPageAndRender);
 els.previousPage.addEventListener("click", () => {
     currentPage = Math.max(1, currentPage - 1);
     render();
